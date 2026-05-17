@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 知识闯关 - 用户与个人中心原型</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        .icon-btn { width: 18px; height: 18px; vertical-align: -3px; display: inline-block; }
+        .icon-lg { width: 28px; height: 28px; vertical-align: -7px; display: inline-block; }
+    </style>
+    <style>
+        /* ========== CSS Variables ========== */
+        :root {
+            --primary: #6C5CE7;
+            --primary-light: #A29BFE;
+            --primary-dark: #5A4BD1;
+            --success: #00D2D3;
+            --success-light: #E8FFFE;
+            --danger: #FF6B6B;
+            --danger-light: #FFF0F0;
+            --warning: #FECA57;
+            --bg: #F8F9FE;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D3436;
+            --text-secondary: #636E72;
+            --text-light: #B2BEC3;
+            --border: #E8E8EF;
+            --shadow: 0 4px 20px rgba(108, 92, 231, 0.08);
+            --shadow-hover: 0 8px 30px rgba(108, 92, 231, 0.15);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+            margin: 60px 0;
+        }
+
+        .section-label {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .mockup-frame {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            max-width: 960px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+        }
+
+        .mockup-header {
+            background: #F1F0F5;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mockup-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .mockup-dot.red { background: #FF5F57; }
+        .mockup-dot.yellow { background: #FFBD2E; }
+        .mockup-dot.green { background: #28CA41; }
+
+        .mockup-url {
+            flex: 1;
+            background: white;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: var(--text-light);
+            margin-left: 8px;
+        }
+
+        .mockup-body {
+            padding: 0;
+        }
+
+        /* ========== Login Page ========== */
+        .login-page {
+            min-height: 560px;
+            display: flex;
+        }
+
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary), #8B7CF7);
+            padding: 60px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+
+        .login-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+
+        .login-brand-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .login-brand-text {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .login-left h2 {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .login-left p {
+            font-size: 15px;
+            opacity: 0.85;
+            line-height: 1.7;
+        }
+
+        .login-features {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .login-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .login-feature-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .login-right {
+            flex: 1;
+            padding: 60px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-light);
+        }
+
+        .btn-login {
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .login-social {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-social:hover {
+            border-color: var(--primary-light);
+            background: rgba(108, 92, 231, 0.02);
+        }
+
+        .btn-social-icon {
+            font-size: 18px;
+        }
+
+        /* ========== Profile Page ========== */
+        .profile-page {
+            padding: 0;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary), #8B7CF7);
+            padding: 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 800;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-meta {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .profile-stats-row {
+            display: flex;
+            gap: 32px;
+            margin-top: 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-stat {
+            text-align: center;
+        }
+
+        .profile-stat-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .profile-stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .profile-body {
+            padding: 32px 40px;
+        }
+
+        .profile-section {
+            margin-bottom: 32px;
+        }
+
+        .profile-section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .streak-card {
+            background: linear-gradient(135deg, #FFF8E1, #FFF3CD);
+            border: 1px solid rgba(254, 202, 87, 0.3);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .streak-icon {
+            font-size: 40px;
+        }
+
+        .streak-info {
+            flex: 1;
+        }
+
+        .streak-count {
+            font-size: 24px;
+            font-weight: 800;
+            color: #F39C12;
+        }
+
+        .streak-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .streak-days {
+            display: flex;
+            gap: 6px;
+        }
+
+        .streak-day {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .streak-day.done {
+            background: #F39C12;
+            color: white;
+        }
+
+        .streak-day.today {
+            background: white;
+            border: 2px solid #F39C12;
+            color: #F39C12;
+        }
+
+        .streak-day.future {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text-light);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .quick-action {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow);
+        }
+
+        .quick-action-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .quick-action-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .chart-placeholder {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        /* ========== History Page ========== */
+        .history-page {
+            padding: 0;
+        }
+
+        .page-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .page-nav-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .page-nav-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .page-nav-action {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .history-filters {
+            display: flex;
+            gap: 12px;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            background: white;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-chip:hover:not(.active) {
+            border-color: var(--primary-light);
+        }
+
+        .history-list {
+            padding: 20px 40px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow);
+        }
+
+        .history-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .history-icon.high {
+            background: var(--success-light);
+        }
+
+        .history-icon.medium {
+            background: #FFF8E1;
+        }
+
+        .history-icon.low {
+            background: var(--danger-light);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .history-meta {
+            font-size: 12px;
+            color: var(--text-light);
+            display: flex;
+            gap: 12px;
+        }
+
+        .history-score {
+            text-align: right;
+        }
+
+        .history-score-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .history-score-label {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .history-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 20px 40px 32px;
+        }
+
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .page-btn:hover:not(.active) {
+            border-color: var(--primary-light);
+        }
+
+        /* ========== Wrong Book Page ========== */
+        .wrongbook-page {
+            padding: 0;
+        }
+
+        .wrongbook-summary {
+            display: flex;
+            gap: 16px;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            background: white;
+        }
+
+        .wrongbook-stat {
+            flex: 1;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .wrongbook-stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--danger);
+        }
+
+        .wrongbook-stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .wrongbook-list {
+            padding: 20px 40px;
+        }
+
+        .wrongbook-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .wrongbook-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .wrongbook-item-source {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 4px 10px;
+            background: rgba(108, 92, 231, 0.08);
+            border-radius: 12px;
+        }
+
+        .wrongbook-item-date {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .wrongbook-question {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .wrongbook-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .wrongbook-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+        }
+
+        .wrongbook-option.correct {
+            background: var(--success-light);
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .wrongbook-option.wrong {
+            background: var(--danger-light);
+            color: var(--danger);
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .wrongbook-option.neutral {
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+
+        .wrongbook-option-letter {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .wrongbook-option.correct .wrongbook-option-letter {
+            background: var(--success);
+            color: white;
+        }
+
+        .wrongbook-option.wrong .wrongbook-option-letter {
+            background: var(--danger);
+            color: white;
+        }
+
+        .wrongbook-option.neutral .wrongbook-option-letter {
+            background: var(--border);
+            color: var(--text-secondary);
+        }
+
+        .wrongbook-explanation {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .wrongbook-explanation strong {
+            color: var(--text-primary);
+        }
+
+        .wrongbook-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-small.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-small.outline {
+            background: white;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-small:hover {
+            transform: translateY(-1px);
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 768px) {
+            .login-page {
+                flex-direction: column;
+            }
+
+            .login-left {
+                padding: 40px 24px;
+            }
+
+            .login-right {
+                padding: 40px 24px;
+            }
+
+            .profile-header {
+                padding: 32px 24px;
+            }
+
+            .profile-body {
+                padding: 24px;
+            }
+
+            .profile-stats-row {
+                gap: 20px;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .history-list,
+            .history-filters,
+            .wrongbook-list,
+            .wrongbook-summary {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <p class="page-title">Prototype</p>
+        <h1 class="page-subtitle">用户与个人中心</h1>
+
+        <!-- ==================== Login Page ==================== -->
+        <div class="section-label">页面 1 / 登录页</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com/login</div>
+            </div>
+            <div class="mockup-body login-page">
+                <!-- Left Panel -->
+                <div class="login-left">
+                    <div class="login-brand">
+                        <div class="login-brand-icon">AI</div>
+                        <div class="login-brand-text">知识闯关</div>
+                    </div>
+                    <h2>学一遍不如闯一关</h2>
+                    <p>AI 驱动的智能学习平台，输入任意知识内容，自动生成闯关题目，让学习变得高效又有趣。</p>
+                    <div class="login-features">
+                        <div class="login-feature">
+                            <div class="login-feature-icon"><i data-lucide="bot" class="icon-btn"></i></div>
+                            <span>AI 智能出题，覆盖全学科</span>
+                        </div>
+                        <div class="login-feature">
+                            <div class="login-feature-icon"><i data-lucide="target" class="icon-btn"></i></div>
+                            <span>闯关模式，越学越上瘾</span>
+                        </div>
+                        <div class="login-feature">
+                            <div class="login-feature-icon"><i data-lucide="bar-chart-3" class="icon-btn"></i></div>
+                            <span>学习报告，可视化进步</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Panel -->
+                <div class="login-right">
+                    <div class="login-title">欢迎回来</div>
+                    <div class="login-subtitle">登录你的账号，继续闯关之旅</div>
+                    <div class="login-form">
+                        <div class="form-group">
+                            <label class="form-label">邮箱地址</label>
+                            <input class="form-input" type="email" placeholder="请输入邮箱">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">密码</label>
+                            <input class="form-input" type="password" placeholder="请输入密码">
+                        </div>
+                        <button class="btn-login">登录</button>
+                    </div>
+                    <div class="login-divider">或使用第三方账号登录</div>
+                    <div class="login-social">
+                        <button class="btn-social">
+                            <span class="btn-social-icon"><i data-lucide="github" class="icon-btn"></i></span>
+                            <span>使用 GitHub 登录</span>
+                        </button>
+                        <button class="btn-social">
+                            <span class="btn-social-icon"><i data-lucide="message-circle" class="icon-btn"></i></span>
+                            <span>使用微信登录</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ==================== Profile Page ==================== -->
+        <div class="section-label">页面 2 / 个人中心</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com/profile</div>
+            </div>
+            <div class="mockup-body profile-page">
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="profile-info">
+                        <div class="profile-avatar">J</div>
+                        <div>
+                            <div class="profile-name">Jason</div>
+                            <div class="profile-meta">加入 12 天 · 已完成 15 次闯关</div>
+                        </div>
+                    </div>
+                    <div class="profile-stats-row">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">150</div>
+                            <div class="profile-stat-label">总答题数</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">78%</div>
+                            <div class="profile-stat-label">正确率</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">5</div>
+                            <div class="profile-stat-label">连续天数</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value">82</div>
+                            <div class="profile-stat-label">平均分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Body -->
+                <div class="profile-body">
+                    <!-- Streak -->
+                    <div class="profile-section">
+                        <div class="profile-section-title"><i data-lucide="flame" class="icon-btn"></i> 连续学习</div>
+                        <div class="streak-card">
+                            <div class="streak-icon"><i data-lucide="flame" style="width:40px;height:40px;color:#F39C12;"></i></div>
+                            <div class="streak-info">
+                                <div class="streak-count">5 天</div>
+                                <div class="streak-label">继续保持，距离下一个成就还差 2 天！</div>
+                            </div>
+                            <div class="streak-days">
+                                <div class="streak-day done">一</div>
+                                <div class="streak-day done">二</div>
+                                <div class="streak-day done">三</div>
+                                <div class="streak-day done">四</div>
+                                <div class="streak-day done">五</div>
+                                <div class="streak-day today">六</div>
+                                <div class="streak-day future">日</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="profile-section">
+                        <div class="profile-section-title"><i data-lucide="zap" class="icon-btn"></i> 快捷入口</div>
+                        <div class="quick-actions">
+                            <div class="quick-action">
+                                <div class="quick-action-icon"><i data-lucide="history" class="icon-lg"></i></div>
+                                <div class="quick-action-text">历史记录</div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="quick-action-icon"><i data-lucide="circle-x" class="icon-lg"></i></div>
+                                <div class="quick-action-text">错题本</div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="quick-action-icon"><i data-lucide="bar-chart-3" class="icon-lg"></i></div>
+                                <div class="quick-action-text">学习报告</div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="quick-action-icon"><i data-lucide="settings" class="icon-lg"></i></div>
+                                <div class="quick-action-text">账号设置</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="profile-section">
+                        <div class="profile-section-title"><i data-lucide="trending-up" class="icon-btn"></i> 学习趋势</div>
+                        <div class="chart-placeholder">
+                            [ 正确率趋势折线图 - ECharts 渲染 ]
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ==================== History Page ==================== -->
+        <div class="section-label">页面 3 / 历史记录</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com/profile/history</div>
+            </div>
+            <div class="mockup-body history-page">
+                <!-- Nav -->
+                <div class="page-nav">
+                    <div class="page-nav-back">← 返回</div>
+                    <div class="page-nav-title">历史记录</div>
+                    <div class="page-nav-action">筛选</div>
+                </div>
+
+                <!-- Filters -->
+                <div class="history-filters">
+                    <div class="filter-chip active">全部</div>
+                    <div class="filter-chip">本周</div>
+                    <div class="filter-chip">本月</div>
+                    <div class="filter-chip">高分 (≥80)</div>
+                    <div class="filter-chip">低分 (<60)</div>
+                </div>
+
+                <!-- List -->
+                <div class="history-list">
+                    <div class="history-item">
+                        <div class="history-icon high"><i data-lucide="book-open" class="icon-btn"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">机器学习过拟合专题</div>
+                            <div class="history-meta">
+                                <span>10 题</span>
+                                <span>5分32秒</span>
+                                <span>2026-05-15</span>
+                            </div>
+                        </div>
+                        <div class="history-score">
+                            <div class="history-score-value">80</div>
+                            <div class="history-score-label">分</div>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon high"><i data-lucide="book-open" class="icon-btn"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">Java 集合框架基础</div>
+                            <div class="history-meta">
+                                <span>10 题</span>
+                                <span>4分18秒</span>
+                                <span>2026-05-14</span>
+                            </div>
+                        </div>
+                        <div class="history-score">
+                            <div class="history-score-value">90</div>
+                            <div class="history-score-label">分</div>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon medium"><i data-lucide="book-open" class="icon-btn"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">设计模式入门</div>
+                            <div class="history-meta">
+                                <span>10 题</span>
+                                <span>7分05秒</span>
+                                <span>2026-05-13</span>
+                            </div>
+                        </div>
+                        <div class="history-score">
+                            <div class="history-score-value">70</div>
+                            <div class="history-score-label">分</div>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon low"><i data-lucide="book-open" class="icon-btn"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">Spring Boot 自动配置原理</div>
+                            <div class="history-meta">
+                                <span>10 题</span>
+                                <span>8分22秒</span>
+                                <span>2026-05-12</span>
+                            </div>
+                        </div>
+                        <div class="history-score">
+                            <div class="history-score-value">50</div>
+                            <div class="history-score-label">分</div>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon high"><i data-lucide="book-open" class="icon-btn"></i></div>
+                        <div class="history-info">
+                            <div class="history-title">HTTP 协议基础</div>
+                            <div class="history-meta">
+                                <span>5 题</span>
+                                <span>2分45秒</span>
+                                <span>2026-05-11</span>
+                            </div>
+                        </div>
+                        <div class="history-score">
+                            <div class="history-score-value">100</div>
+                            <div class="history-score-label">分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="history-pagination">
+                    <div class="page-btn">‹</div>
+                    <div class="page-btn active">1</div>
+                    <div class="page-btn">2</div>
+                    <div class="page-btn">3</div>
+                    <div class="page-btn">›</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ==================== Wrong Book Page ==================== -->
+        <div class="section-label">页面 4 / 错题本</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com/profile/wrong-book</div>
+            </div>
+            <div class="mockup-body wrongbook-page">
+                <!-- Nav -->
+                <div class="page-nav">
+                    <div class="page-nav-back">← 返回</div>
+                    <div class="page-nav-title">错题本</div>
+                    <div class="page-nav-action">导出</div>
+                </div>
+
+                <!-- Summary -->
+                <div class="wrongbook-summary">
+                    <div class="wrongbook-stat">
+                        <div class="wrongbook-stat-value">12</div>
+                        <div class="wrongbook-stat-label">总错题数</div>
+                    </div>
+                    <div class="wrongbook-stat">
+                        <div class="wrongbook-stat-value">3</div>
+                        <div class="wrongbook-stat-label">薄弱知识点</div>
+                    </div>
+                    <div class="wrongbook-stat">
+                        <div class="wrongbook-stat-value">5</div>
+                        <div class="wrongbook-stat-label">待复习</div>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="wrongbook-list">
+                    <!-- Item 1 -->
+                    <div class="wrongbook-item">
+                        <div class="wrongbook-item-header">
+                            <span class="wrongbook-item-source">机器学习过拟合专题</span>
+                            <span class="wrongbook-item-date">2026-05-15</span>
+                        </div>
+                        <div class="wrongbook-question">
+                            关于过拟合，以下说法错误的是？
+                        </div>
+                        <div class="wrongbook-options">
+                            <div class="wrongbook-option wrong">
+                                <div class="wrongbook-option-letter">A</div>
+                                <span>过拟合意味着模型在训练和测试集上都表现很好</span>
+                            </div>
+                            <div class="wrongbook-option correct">
+                                <div class="wrongbook-option-letter">B</div>
+                                <span>过拟合可以通过增加正则化强度来缓解</span>
+                            </div>
+                            <div class="wrongbook-option neutral">
+                                <div class="wrongbook-option-letter">C</div>
+                                <span>过拟合只发生在深度学习模型中</span>
+                            </div>
+                            <div class="wrongbook-option neutral">
+                                <div class="wrongbook-option-letter">D</div>
+                                <span>增加训练数据量会加剧过拟合</span>
+                            </div>
+                        </div>
+                        <div class="wrongbook-explanation">
+                            <strong>解析：</strong>过拟合是指模型在训练数据上表现优秀，但在未见数据上泛化能力差。选项 A 的说法正好相反，过拟合时模型在训练集上表现好，但在测试集上表现差。
+                        </div>
+                        <div class="wrongbook-actions">
+                            <button class="btn-small outline">移除</button>
+                            <button class="btn-small primary">重新练习</button>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="wrongbook-item">
+                        <div class="wrongbook-item-header">
+                            <span class="wrongbook-item-source">机器学习过拟合专题</span>
+                            <span class="wrongbook-item-date">2026-05-15</span>
+                        </div>
+                        <div class="wrongbook-question">
+                            以下哪种正则化方法会将部分权重压缩为零？
+                        </div>
+                        <div class="wrongbook-options">
+                            <div class="wrongbook-option correct">
+                                <div class="wrongbook-option-letter">A</div>
+                                <span>L1 正则化（Lasso）</span>
+                            </div>
+                            <div class="wrongbook-option neutral">
+                                <div class="wrongbook-option-letter">B</div>
+                                <span>L2 正则化（Ridge）</span>
+                            </div>
+                            <div class="wrongbook-option wrong">
+                                <div class="wrongbook-option-letter">C</div>
+                                <span>Dropout</span>
+                            </div>
+                            <div class="wrongbook-option neutral">
+                                <div class="wrongbook-option-letter">D</div>
+                                <span>早停法（Early Stopping）</span>
+                            </div>
+                        </div>
+                        <div class="wrongbook-explanation">
+                            <strong>解析：</strong>L1 正则化（Lasso）会将部分权重压缩为 exactly zero，从而实现特征选择。L2 正则化（Ridge）会将权重压缩到接近零但不会等于零。Dropout 是随机丢弃神经元，早停法是提前终止训练。
+                        </div>
+                        <div class="wrongbook-actions">
+                            <button class="btn-small outline">移除</button>
+                            <button class="btn-small primary">重新练习</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

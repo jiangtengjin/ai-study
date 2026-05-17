@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 知识闯关 - 通用组件库</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        .icon-btn { width: 18px; height: 18px; vertical-align: -3px; display: inline-block; }
+        .icon-section { width: 20px; height: 20px; vertical-align: -4px; display: inline-block; }
+        .icon-lg { width: 28px; height: 28px; vertical-align: -7px; display: inline-block; }
+    </style>
+    <style>
+        /* ========== CSS Variables ========== */
+        :root {
+            --primary: #6C5CE7;
+            --primary-light: #A29BFE;
+            --primary-dark: #5A4BD1;
+            --primary-bg: rgba(108, 92, 231, 0.08);
+            --success: #00D2D3;
+            --success-light: #E8FFFE;
+            --danger: #FF6B6B;
+            --danger-light: #FFF0F0;
+            --warning: #FECA57;
+            --warning-light: #FFF8E1;
+            --bg: #F8F9FE;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D3436;
+            --text-secondary: #636E72;
+            --text-light: #B2BEC3;
+            --border: #E8E8EF;
+            --shadow: 0 4px 20px rgba(108, 92, 231, 0.08);
+            --shadow-hover: 0 8px 30px rgba(108, 92, 231, 0.15);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        /* ========== Section ========== */
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        .component-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .component-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .component-card-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .component-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .component-preview-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        /* ========== Colors ========== */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .color-swatch {
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .color-swatch-block {
+            height: 64px;
+        }
+
+        .color-swatch-info {
+            padding: 10px 12px;
+            background: white;
+        }
+
+        .color-swatch-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .color-swatch-hex {
+            font-size: 11px;
+            color: var(--text-light);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* ========== Typography ========== */
+        .typo-sample {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .typo-sample:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .typo-label {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        /* ========== Buttons ========== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(108, 92, 231, 0.35);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #00B4D8);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 210, 211, 0.25);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #EE5A5A);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.25);
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-bg);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-lg {
+            padding: 16px 32px;
+            font-size: 16px;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-round {
+            border-radius: var(--radius-full);
+        }
+
+        /* ========== Inputs ========== */
+        .input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            color: var(--text-primary);
+        }
+
+        .input:focus {
+            border-color: var(--primary-light);
+        }
+
+        .input::placeholder {
+            color: var(--text-light);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .input-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .input-hint {
+            font-size: 11px;
+            color: var(--text-light);
+        }
+
+        .textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636E72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        /* ========== Cards ========== */
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .card-hover:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .card-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* ========== Badges ========== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-primary {
+            background: var(--primary-bg);
+            color: var(--primary);
+        }
+
+        .badge-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .badge-warning {
+            background: var(--warning-light);
+            color: #F39C12;
+        }
+
+        .badge-neutral {
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+
+        /* ========== Progress ========== */
+        .progress {
+            height: 8px;
+            background: var(--border);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 0.5s ease;
+        }
+
+        .progress-primary {
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+
+        .progress-success {
+            background: linear-gradient(90deg, var(--success), #00B4D8);
+        }
+
+        .progress-danger {
+            background: linear-gradient(90deg, var(--danger), #EE5A5A);
+        }
+
+        .progress-animated {
+            background-size: 200% 100%;
+            animation: progressShine 2s linear infinite;
+        }
+
+        @keyframes progressShine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ========== Tags / Chips ========== */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-secondary);
+        }
+
+        .tag:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .tag.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ========== Alerts ========== */
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .alert-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .alert-success {
+            background: var(--success-light);
+            border: 1px solid rgba(0, 210, 211, 0.2);
+            color: #008B8B;
+        }
+
+        .alert-danger {
+            background: var(--danger-light);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            color: #C0392B;
+        }
+
+        .alert-warning {
+            background: var(--warning-light);
+            border: 1px solid rgba(254, 202, 87, 0.3);
+            color: #9A7D0A;
+        }
+
+        .alert-info {
+            background: var(--primary-bg);
+            border: 1px solid rgba(108, 92, 231, 0.15);
+            color: var(--primary);
+        }
+
+        /* ========== Quiz Option Component ========== */
+        .quiz-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px 18px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-light);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--primary);
+            background: var(--primary-bg);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: var(--success-light);
+        }
+
+        .quiz-option.wrong {
+            border-color: var(--danger);
+            background: var(--danger-light);
+        }
+
+        .quiz-option-letter {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            background: var(--bg);
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .quiz-option.selected .quiz-option-letter {
+            background: var(--primary);
+            color: white;
+        }
+
+        .quiz-option.correct .quiz-option-letter {
+            background: var(--success);
+            color: white;
+        }
+
+        .quiz-option.wrong .quiz-option-letter {
+            background: var(--danger);
+            color: white;
+        }
+
+        .quiz-option-text {
+            font-size: 14px;
+            line-height: 1.5;
+            padding-top: 3px;
+        }
+
+        /* ========== Stat Card ========== */
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card-value {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* ========== Avatar ========== */
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+        }
+
+        .avatar-lg {
+            width: 56px;
+            height: 56px;
+            font-size: 20px;
+        }
+
+        .avatar-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+
+        .avatar-success {
+            background: linear-gradient(135deg, var(--success), #00B4D8);
+        }
+
+        /* ========== Tooltip / Popover ========== */
+        .tooltip-demo {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-box {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: white;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            white-space: nowrap;
+            margin-bottom: 8px;
+        }
+
+        .tooltip-box::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--text-primary);
+        }
+
+        /* ========== Modal ========== */
+        .modal-demo {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* ========== Toast ========== */
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            font-size: 14px;
+            min-width: 280px;
+        }
+
+        .toast-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .toast-success { border-left: 4px solid var(--success); }
+        .toast-danger { border-left: 4px solid var(--danger); }
+        .toast-warning { border-left: 4px solid var(--warning); }
+        .toast-info { border-left: 4px solid var(--primary); }
+
+        /* ========== Loading ========== */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--border) 25%, #F0F0F5  50%, var(--border) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ========== Confetti Effect (Static) ========== */
+        .confetti-container {
+            position: relative;
+            height: 80px;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary-bg), var(--success-light));
+            border-radius: var(--radius);
+        }
+
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        /* ========== Divider ========== */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <p>Design System</p>
+            <h1>通用组件库</h1>
+        </div>
+
+        <!-- ==================== Colors ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="palette" class="icon-section"></i> 色彩系统</h2>
+            <p class="section-desc">品牌色、功能色、中性色的完整定义</p>
+            <div class="color-grid">
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: linear-gradient(135deg, #6C5CE7, #A29BFE)"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Primary</div>
+                        <div class="color-swatch-hex">#6C5CE7</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: linear-gradient(135deg, #00D2D3, #00B4D8)"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Success</div>
+                        <div class="color-swatch-hex">#00D2D3</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: linear-gradient(135deg, #FF6B6B, #EE5A5A)"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Danger</div>
+                        <div class="color-swatch-hex">#FF6B6B</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: linear-gradient(135deg, #FECA57, #F39C12)"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Warning</div>
+                        <div class="color-swatch-hex">#FECA57</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: #2D3436"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Text Primary</div>
+                        <div class="color-swatch-hex">#2D3436</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: #636E72"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Text Secondary</div>
+                        <div class="color-swatch-hex">#636E72</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: #B2BEC3"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Text Light</div>
+                        <div class="color-swatch-hex">#B2BEC3</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-swatch-block" style="background: #F8F9FE"></div>
+                    <div class="color-swatch-info">
+                        <div class="color-swatch-name">Background</div>
+                        <div class="color-swatch-hex">#F8F9FE</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Typography ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="type" class="icon-section"></i> 字体排版</h2>
+            <p class="section-desc">标题、正文、辅助文字的样式定义</p>
+            <div class="component-card">
+                <div class="typo-sample">
+                    <div class="typo-label">H1 - 页面标题 (28px / 800)</div>
+                    <div style="font-size: 28px; font-weight: 800;">学一遍不如闯一关</div>
+                </div>
+                <div class="typo-sample">
+                    <div class="typo-label">H2 - 模块标题 (20px / 700)</div>
+                    <div style="font-size: 20px; font-weight: 700;">关于过拟合，以下说法正确的是？</div>
+                </div>
+                <div class="typo-sample">
+                    <div class="typo-label">H3 - 卡片标题 (16px / 600)</div>
+                    <div style="font-size: 16px; font-weight: 600;">机器学习过拟合专题</div>
+                </div>
+                <div class="typo-sample">
+                    <div class="typo-label">Body - 正文 (14px / 400)</div>
+                    <div style="font-size: 14px; color: var(--text-secondary);">过拟合是指模型在训练数据上表现优秀，但在未见数据上泛化能力差。正则化通过惩罚模型复杂度来缓解过拟合问题。</div>
+                </div>
+                <div class="typo-sample">
+                    <div class="typo-label">Caption - 辅助文字 (12px / 400)</div>
+                    <div style="font-size: 12px; color: var(--text-light);">2026-05-15 · 10 题 · 5分32秒</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Buttons ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="square" class="icon-section"></i> 按钮</h2>
+            <p class="section-desc">主要按钮、次要按钮、幽灵按钮等</p>
+            <div class="component-row">
+                <div class="component-card">
+                    <div class="component-card-title">填充按钮</div>
+                    <div class="component-preview">
+                        <button class="btn btn-primary">主要按钮</button>
+                        <button class="btn btn-success">成功按钮</button>
+                        <button class="btn btn-danger">危险按钮</button>
+                    </div>
+                </div>
+                <div class="component-card">
+                    <div class="component-card-title">轮廓 / 幽灵按钮</div>
+                    <div class="component-preview">
+                        <button class="btn btn-outline">轮廓按钮</button>
+                        <button class="btn btn-ghost">幽灵按钮</button>
+                    </div>
+                </div>
+            </div>
+            <div class="component-row" style="margin-top: 16px;">
+                <div class="component-card">
+                    <div class="component-card-title">尺寸</div>
+                    <div class="component-preview">
+                        <button class="btn btn-primary btn-sm">小按钮</button>
+                        <button class="btn btn-primary">默认按钮</button>
+                        <button class="btn btn-primary btn-lg">大按钮</button>
+                    </div>
+                </div>
+                <div class="component-card">
+                    <div class="component-card-title">带图标</div>
+                    <div class="component-preview">
+                        <button class="btn btn-primary"><i data-lucide="play" class="icon-btn"></i> 开始闯关</button>
+                        <button class="btn btn-success"><i data-lucide="check" class="icon-btn"></i> 确认</button>
+                        <button class="btn btn-outline"><i data-lucide="share-2" class="icon-btn"></i> 分享</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Inputs ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="text-cursor-input" class="icon-section"></i> 输入框</h2>
+            <p class="section-desc">文本输入、文本域、下拉选择等</p>
+            <div class="component-row">
+                <div class="component-card">
+                    <div class="component-card-title">文本输入</div>
+                    <div class="component-preview-col">
+                        <div class="input-group">
+                            <label class="input-label">邮箱地址</label>
+                            <input class="input" type="email" placeholder="请输入邮箱">
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">密码</label>
+                            <input class="input" type="password" placeholder="请输入密码">
+                            <span class="input-hint">至少 8 位字符</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="component-card">
+                    <div class="component-card-title">文本域 / 选择框</div>
+                    <div class="component-preview-col">
+                        <div class="input-group">
+                            <label class="input-label">知识内容</label>
+                            <textarea class="input textarea" placeholder="请输入你想学习的知识内容..."></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">题目数量</label>
+                            <select class="input select">
+                                <option>10 题</option>
+                                <option>15 题</option>
+                                <option>20 题</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Cards ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="layout-grid" class="icon-section"></i> 卡片</h2>
+            <p class="section-desc">基础卡片、可交互卡片</p>
+            <div class="component-row">
+                <div class="component-card card card-hover">
+                    <div class="card-body">
+                        <div class="card-title"><i data-lucide="book-open" class="icon-btn"></i> 机器学习基础</div>
+                        <div class="card-text">本次学习了监督学习、无监督学习的核心概念，以及过拟合的定义和解决方法。</div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-ghost btn-sm">查看详情</button>
+                        <button class="btn btn-primary btn-sm">重新闯关</button>
+                    </div>
+                </div>
+                <div class="component-card card card-hover">
+                    <div class="card-body">
+                        <div class="card-title"><i data-lucide="book-open" class="icon-btn"></i> Java 集合框架</div>
+                        <div class="card-text">掌握了 ArrayList、LinkedList、HashMap 等常用集合的特性和使用场景。</div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-ghost btn-sm">查看详情</button>
+                        <button class="btn btn-primary btn-sm">重新闯关</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Badges ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="tag" class="icon-section"></i> 标签 / 徽章</h2>
+            <p class="section-desc">状态标签、分类标签、难度标签等</p>
+            <div class="component-card">
+                <div class="component-card-title">徽章</div>
+                <div class="component-preview">
+                    <span class="badge badge-primary">AI 出题</span>
+                    <span class="badge badge-success">答对</span>
+                    <span class="badge badge-danger">答错</span>
+                    <span class="badge badge-warning">中等</span>
+                    <span class="badge badge-neutral">10 题</span>
+                </div>
+            </div>
+            <div class="component-card" style="margin-top: 16px;">
+                <div class="component-card-title">可选标签 (Chips)</div>
+                <div class="component-preview">
+                    <span class="tag">全部</span>
+                    <span class="tag active">本周</span>
+                    <span class="tag">本月</span>
+                    <span class="tag">高分</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Progress ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="bar-chart-3" class="icon-section"></i> 进度条</h2>
+            <p class="section-desc">答题进度、学习进度等</p>
+            <div class="component-card">
+                <div class="component-preview-col">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-light); margin-bottom: 6px;">
+                            <span>答题进度</span>
+                            <span>3/10 (30%)</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-primary" style="width: 30%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-light); margin-bottom: 6px;">
+                            <span>正确率</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-success" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-light); margin-bottom: 6px;">
+                            <span>薄弱知识点</span>
+                            <span>40%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-danger" style="width: 40%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Alerts ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="message-square" class="icon-section"></i> 提示框</h2>
+            <p class="section-desc">成功、错误、警告、信息提示</p>
+            <div class="component-card">
+                <div class="component-preview-col" style="gap: 12px;">
+                    <div class="alert alert-success">
+                        <span class="alert-icon"><i data-lucide="circle-check" class="icon-btn"></i></span>
+                        <span>答对了！+10 分，继续保持！</span>
+                    </div>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon"><i data-lucide="circle-x" class="icon-btn"></i></span>
+                        <span>答错了，正确答案是 B。请查看下方解析。</span>
+                    </div>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon"><i data-lucide="triangle-alert" class="icon-btn"></i></span>
+                        <span>AI 生成题目需要一些时间，请耐心等待...</span>
+                    </div>
+                    <div class="alert alert-info">
+                        <span class="alert-icon"><i data-lucide="lightbulb" class="icon-btn"></i></span>
+                        <span>提示：输入更详细的知识内容，AI 会生成更精准的题目。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Quiz Option States ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="target" class="icon-section"></i> 答题选项状态</h2>
+            <p class="section-desc">默认、选中、正确、错误四种状态</p>
+            <div class="component-row">
+                <div class="component-card">
+                    <div class="component-card-title">默认 & 选中</div>
+                    <div class="component-preview-col" style="gap: 10px;">
+                        <div class="quiz-option">
+                            <div class="quiz-option-letter">A</div>
+                            <div class="quiz-option-text">过拟合意味着模型在训练和测试集上都表现很好</div>
+                        </div>
+                        <div class="quiz-option selected">
+                            <div class="quiz-option-letter">B</div>
+                            <div class="quiz-option-text">过拟合可以通过增加正则化强度来缓解</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="component-card">
+                    <div class="component-card-title">正确 & 错误</div>
+                    <div class="component-preview-col" style="gap: 10px;">
+                        <div class="quiz-option correct">
+                            <div class="quiz-option-letter">B</div>
+                            <div class="quiz-option-text">过拟合可以通过增加正则化强度来缓解</div>
+                        </div>
+                        <div class="quiz-option wrong">
+                            <div class="quiz-option-letter">A</div>
+                            <div class="quiz-option-text">过拟合意味着模型在训练和测试集上都表现很好</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Stat Cards ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="trending-up" class="icon-section"></i> 数据统计卡片</h2>
+            <p class="section-desc">得分、正确率、用时等统计展示</p>
+            <div class="component-row">
+                <div class="stat-card">
+                    <div class="stat-card-value">80</div>
+                    <div class="stat-card-label">得分</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">8/10</div>
+                    <div class="stat-card-label">正确率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">5'32"</div>
+                    <div class="stat-card-label">用时</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value"><i data-lucide="flame" class="icon-btn"></i> 5</div>
+                    <div class="stat-card-label">连续天数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Toasts ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="bell" class="icon-section"></i> Toast 提示</h2>
+            <p class="section-desc">操作反馈提示</p>
+            <div class="component-card">
+                <div class="component-preview-col" style="gap: 12px;">
+                    <div class="toast toast-success">
+                        <span class="toast-icon"><i data-lucide="circle-check" class="icon-btn"></i></span>
+                        <span>分享链接已复制到剪贴板</span>
+                    </div>
+                    <div class="toast toast-danger">
+                        <span class="toast-icon"><i data-lucide="circle-x" class="icon-btn"></i></span>
+                        <span>AI 生成题目失败，请稍后重试</span>
+                    </div>
+                    <div class="toast toast-info">
+                        <span class="toast-icon"><i data-lucide="lightbulb" class="icon-btn"></i></span>
+                        <span>连续学习 7 天，解锁成就徽章！</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Modal ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="app-window" class="icon-section"></i> 弹窗 (Modal)</h2>
+            <p class="section-desc">确认弹窗、分享弹窗等</p>
+            <div class="component-card" style="display: flex; justify-content: center; padding: 40px;">
+                <div class="modal-demo">
+                    <div class="modal-header">
+                        <div class="modal-title"><i data-lucide="share-2" class="icon-btn"></i> 分享学习报告</div>
+                        <button class="modal-close">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div style="font-size: 48px; margin-bottom: 8px;"><i data-lucide="trophy" style="width:48px;height:48px;"></i></div>
+                            <div style="font-size: 18px; font-weight: 700;">机器学习过拟合专题</div>
+                            <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">得分 80 · 8/10 正确率</div>
+                        </div>
+                        <div style="background: var(--bg); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; align-items: center; gap: 8px;">
+                            <input class="input" value="https://ai-study.com/share/abc123" readonly style="flex: 1; border: none; background: transparent; padding: 0;">
+                            <button class="btn btn-primary btn-sm">复制</button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-ghost">取消</button>
+                        <button class="btn btn-primary">生成海报</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Loading ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="loader" class="icon-section"></i> 加载状态</h2>
+            <p class="section-desc">加载中、骨架屏等</p>
+            <div class="component-row">
+                <div class="component-card">
+                    <div class="component-card-title">加载动画</div>
+                    <div class="component-preview" style="gap: 24px;">
+                        <div class="spinner"></div>
+                        <div style="font-size: 14px; color: var(--text-secondary);">AI 正在生成题目...</div>
+                    </div>
+                </div>
+                <div class="component-card">
+                    <div class="component-card-title">骨架屏</div>
+                    <div class="component-preview-col" style="gap: 12px;">
+                        <div class="skeleton" style="height: 16px; width: 60%;"></div>
+                        <div class="skeleton" style="height: 12px; width: 100%;"></div>
+                        <div class="skeleton" style="height: 12px; width: 80%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Avatars ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="user" class="icon-section"></i> 头像</h2>
+            <p class="section-desc">不同尺寸和颜色的头像</p>
+            <div class="component-card">
+                <div class="component-preview" style="gap: 16px;">
+                    <div class="avatar avatar-sm avatar-primary">J</div>
+                    <div class="avatar avatar-primary">J</div>
+                    <div class="avatar avatar-lg avatar-primary">J</div>
+                    <div class="avatar avatar-success">A</div>
+                    <div class="avatar" style="background: linear-gradient(135deg, var(--danger), #EE5A5A);">K</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Confetti Effect ==================== -->
+        <div class="section">
+            <h2 class="section-title"><i data-lucide="sparkles" class="icon-section"></i> 庆祝特效 (静态示意)</h2>
+            <p class="section-desc">闯关成功时的庆祝动画</p>
+            <div class="confetti-container">
+                <div class="confetti" style="background: var(--primary); top: 10%; left: 15%; transform: rotate(45deg);"></div>
+                <div class="confetti" style="background: var(--success); top: 20%; left: 35%; transform: rotate(-30deg);"></div>
+                <div class="confetti" style="background: var(--warning); top: 5%; left: 55%; transform: rotate(60deg);"></div>
+                <div class="confetti" style="background: var(--danger); top: 15%; left: 75%; transform: rotate(-45deg);"></div>
+                <div class="confetti" style="background: var(--primary-light); top: 30%; left: 25%; transform: rotate(20deg);"></div>
+                <div class="confetti" style="background: var(--success); top: 25%; left: 65%; transform: rotate(-60deg);"></div>
+                <div class="confetti" style="background: var(--warning); top: 40%; left: 85%; transform: rotate(30deg);"></div>
+                <div class="confetti" style="background: var(--primary); top: 35%; left: 45%; transform: rotate(-15deg);"></div>
+                <div class="confetti" style="background: var(--danger); top: 50%; left: 10%; transform: rotate(50deg);"></div>
+                <div class="confetti" style="background: var(--success); top: 45%; left: 90%; transform: rotate(-40deg);"></div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                    <div style="font-size: 32px; margin-bottom: 4px;"><i data-lucide="sparkles" style="width:32px;height:32px;"></i></div>
+                    <div style="font-size: 16px; font-weight: 700; color: var(--primary);">闯关完成！</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

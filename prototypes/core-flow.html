@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 知识闯关 - 核心业务流程原型</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        /* ========== Icon Helper ========== */
+        .icon-svg { width: 1em; height: 1em; vertical-align: -0.125em; display: inline-block; stroke-width: 2; }
+        .icon-btn { width: 18px; height: 18px; vertical-align: -3px; display: inline-block; }
+        .icon-section { width: 20px; height: 20px; vertical-align: -4px; display: inline-block; }
+        .icon-lg { width: 28px; height: 28px; vertical-align: -7px; display: inline-block; }
+        .icon-xl { width: 40px; height: 40px; display: inline-block; }
+    </style>
+    <style>
+        /* ========== CSS Variables ========== */
+        :root {
+            --primary: #6C5CE7;
+            --primary-light: #A29BFE;
+            --primary-dark: #5A4BD1;
+            --success: #00D2D3;
+            --success-light: #E8FFFE;
+            --danger: #FF6B6B;
+            --danger-light: #FFF0F0;
+            --warning: #FECA57;
+            --bg: #F8F9FE;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D3436;
+            --text-secondary: #636E72;
+            --text-light: #B2BEC3;
+            --border: #E8E8EF;
+            --shadow: 0 4px 20px rgba(108, 92, 231, 0.08);
+            --shadow-hover: 0 8px 30px rgba(108, 92, 231, 0.15);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-lg: 20px;
+        }
+
+        /* ========== Reset ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ========== Page Container ========== */
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+            margin: 60px 0;
+        }
+
+        /* ========== Section Labels ========== */
+        .section-label {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        /* ========== Mockup Frame ========== */
+        .mockup-frame {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            max-width: 960px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+        }
+
+        .mockup-header {
+            background: #F1F0F5;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mockup-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .mockup-dot.red { background: #FF5F57; }
+        .mockup-dot.yellow { background: #FFBD2E; }
+        .mockup-dot.green { background: #28CA41; }
+
+        .mockup-url {
+            flex: 1;
+            background: white;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: var(--text-light);
+            margin-left: 8px;
+        }
+
+        .mockup-body {
+            padding: 0;
+        }
+
+        /* ========== State 1: Homepage ========== */
+        .homepage {
+            padding: 0;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-link {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light), var(--success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 40px 40px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(0, 210, 211, 0.1));
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .input-section {
+            padding: 0 40px 40px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .input-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: border-color 0.3s;
+        }
+
+        .input-card:focus-within {
+            border-color: var(--primary-light);
+        }
+
+        .input-textarea {
+            width: 100%;
+            min-height: 120px;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            color: var(--text-primary);
+            resize: none;
+            font-family: inherit;
+            line-height: 1.8;
+        }
+
+        .input-textarea::placeholder {
+            color: var(--text-light);
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .input-action-btn:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+            background: rgba(108, 92, 231, 0.04);
+        }
+
+        .config-section {
+            padding: 0 40px 32px;
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        .config-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .config-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+
+        .config-option {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .config-option.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .config-option:hover:not(.active) {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .start-section {
+            text-align: center;
+            padding: 0 40px 48px;
+        }
+
+        .btn-start {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(108, 92, 231, 0.4);
+        }
+
+        .recent-section {
+            padding: 0 40px 40px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .recent-title {
+            font-size: 14px;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .recent-title::before,
+        .recent-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .recent-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .recent-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .recent-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow);
+        }
+
+        .recent-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recent-card-score {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .recent-card-date {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-top: 8px;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .score-badge.high {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .score-badge.medium {
+            background: #FFF8E1;
+            color: #F39C12;
+        }
+
+        /* ========== State 2: Quiz ========== */
+        .quiz-page {
+            min-height: 600px;
+        }
+
+        .quiz-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quiz-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .quiz-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .quiz-stats {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quiz-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .quiz-stat .icon {
+            font-size: 16px;
+        }
+
+        .quiz-progress-bar {
+            height: 6px;
+            background: var(--border);
+            position: relative;
+        }
+
+        .quiz-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            border-radius: 0 3px 3px 0;
+            width: 30%;
+            transition: width 0.5s ease;
+        }
+
+        .quiz-content {
+            padding: 48px 40px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .quiz-question-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .quiz-question-num {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .quiz-difficulty {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .quiz-difficulty.easy {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .quiz-difficulty.medium {
+            background: #FFF8E1;
+            color: #F39C12;
+        }
+
+        .quiz-difficulty.hard {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .quiz-question-text {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.6;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .quiz-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 18px 20px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-light);
+            background: rgba(108, 92, 231, 0.02);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--primary);
+            background: rgba(108, 92, 231, 0.04);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: var(--success-light);
+        }
+
+        .quiz-option.wrong {
+            border-color: var(--danger);
+            background: var(--danger-light);
+        }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            background: var(--bg);
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .quiz-option.selected .option-letter {
+            background: var(--primary);
+            color: white;
+        }
+
+        .quiz-option.correct .option-letter {
+            background: var(--success);
+            color: white;
+        }
+
+        .quiz-option.wrong .option-letter {
+            background: var(--danger);
+            color: white;
+        }
+
+        .option-text {
+            font-size: 15px;
+            line-height: 1.6;
+            padding-top: 4px;
+        }
+
+        .quiz-feedback {
+            margin-top: 24px;
+            padding: 20px 24px;
+            border-radius: var(--radius);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .quiz-feedback.correct {
+            background: var(--success-light);
+            border: 1px solid rgba(0, 210, 211, 0.2);
+        }
+
+        .quiz-feedback.wrong {
+            background: var(--danger-light);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .feedback-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feedback-header.correct {
+            color: var(--success);
+        }
+
+        .feedback-header.wrong {
+            color: var(--danger);
+        }
+
+        .feedback-text {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .feedback-text strong {
+            color: var(--text-primary);
+        }
+
+        .quiz-footer {
+            display: flex;
+            justify-content: flex-end;
+            padding: 20px 40px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-next {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-next:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+        }
+
+        /* ========== State 3: Report ========== */
+        .report-page {
+            padding: 48px 40px;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .report-emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .report-title {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .report-topic {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 560px;
+            margin: 0 auto 32px;
+        }
+
+        .report-stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .report-stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .report-stat-label {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .report-rating {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .rating-stars {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .rating-title {
+            display: inline-block;
+            padding: 6px 20px;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(0, 210, 211, 0.1));
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .report-section {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .report-section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-summary {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .mastery-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mastery-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .mastery-item.good {
+            color: var(--success);
+        }
+
+        .mastery-item.bad {
+            color: var(--danger);
+        }
+
+        .wrong-question {
+            padding: 16px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            margin-bottom: 12px;
+        }
+
+        .wrong-question:last-child {
+            margin-bottom: 0;
+        }
+
+        .wrong-question-text {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .wrong-question-answers {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+        }
+
+        .wrong-question-answers .correct {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .wrong-question-answers .user {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .report-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn-report {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-report.primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            box-shadow: 0 4px 16px rgba(108, 92, 231, 0.2);
+        }
+
+        .btn-report.secondary {
+            background: white;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-report:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-report.primary:hover {
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-report.secondary:hover {
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 12px 20px;
+            }
+
+            .hero {
+                padding: 40px 20px 24px;
+            }
+
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .input-section,
+            .config-section,
+            .start-section,
+            .recent-section {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .config-section {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .recent-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quiz-content {
+                padding: 32px 20px;
+            }
+
+            .quiz-question-text {
+                font-size: 17px;
+            }
+
+            .report-stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+
+            .report-stat-value {
+                font-size: 24px;
+            }
+
+            .report-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <p class="page-title">Prototype</p>
+        <h1 class="page-subtitle">核心业务流程</h1>
+
+        <!-- ==================== State 1: Homepage ==================== -->
+        <div class="section-label">状态 1 / 首页 — 知识输入</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com</div>
+            </div>
+            <div class="mockup-body homepage">
+                <!-- Nav -->
+                <nav class="nav">
+                    <div class="nav-logo">
+                        <div class="nav-logo-icon">AI</div>
+                        <span>知识闯关</span>
+                    </div>
+                    <div class="nav-links">
+                        <a class="nav-link">学习统计</a>
+                        <a class="nav-link">历史记录</a>
+                        <div class="nav-avatar">J</div>
+                    </div>
+                </nav>
+
+                <!-- Hero -->
+                <div class="hero">
+                    <div class="hero-badge">AI 驱动的智能学习</div>
+                    <h1>学一遍不如闯一关</h1>
+                    <p>输入任意知识内容，AI 帮你出题闯关，高效掌握每一个知识点</p>
+                </div>
+
+                <!-- Input -->
+                <div class="input-section">
+                    <div class="input-card">
+                        <textarea class="input-textarea" placeholder="请粘贴你想学习的知识内容，或上传文档...&#10;&#10;例如：机器学习中的过拟合是什么？如何避免？"></textarea>
+                        <div class="input-actions">
+                            <button class="input-action-btn"><i data-lucide="paperclip" class="icon-btn"></i> 上传文档</button>
+                            <button class="input-action-btn"><i data-lucide="link" class="icon-btn"></i> 网页链接</button>
+                            <button class="input-action-btn"><i data-lucide="globe" class="icon-btn"></i> 网络搜索</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Config -->
+                <div class="config-section">
+                    <div class="config-group">
+                        <span class="config-label">题目数量</span>
+                        <div class="config-options">
+                            <div class="config-option">5 题</div>
+                            <div class="config-option active">10 题</div>
+                            <div class="config-option">15 题</div>
+                            <div class="config-option">20 题</div>
+                        </div>
+                    </div>
+                    <div class="config-group">
+                        <span class="config-label">难度等级</span>
+                        <div class="config-options">
+                            <div class="config-option">简单</div>
+                            <div class="config-option active">中等</div>
+                            <div class="config-option">困难</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Start Button -->
+                <div class="start-section">
+                    <button class="btn-start"><i data-lucide="play" class="icon-btn"></i> 开始闯关</button>
+                </div>
+
+                <!-- Recent -->
+                <div class="recent-section">
+                    <div class="recent-title">最近学习</div>
+                    <div class="recent-grid">
+                        <div class="recent-card">
+                            <div class="recent-card-title"><i data-lucide="book-open" class="icon-btn"></i> 机器学习基础</div>
+                            <div class="recent-card-score">
+                                <span class="score-badge high">8/10</span>
+                            </div>
+                            <div class="recent-card-date">2026-05-15</div>
+                        </div>
+                        <div class="recent-card">
+                            <div class="recent-card-title"><i data-lucide="book-open" class="icon-btn"></i> Java 集合框架</div>
+                            <div class="recent-card-score">
+                                <span class="score-badge high">9/10</span>
+                            </div>
+                            <div class="recent-card-date">2026-05-14</div>
+                        </div>
+                        <div class="recent-card">
+                            <div class="recent-card-title"><i data-lucide="book-open" class="icon-btn"></i> 设计模式入门</div>
+                            <div class="recent-card-score">
+                                <span class="score-badge medium">7/10</span>
+                            </div>
+                            <div class="recent-card-date">2026-05-13</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ==================== State 2: Quiz ==================== -->
+        <div class="section-label">状态 2 / 答题闯关中</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com/quiz/1</div>
+            </div>
+            <div class="mockup-body quiz-page">
+                <!-- Quiz Nav -->
+                <div class="quiz-nav">
+                    <div class="quiz-back">← 返回</div>
+                    <div class="quiz-title">机器学习过拟合专题</div>
+                    <div class="quiz-stats">
+                        <div class="quiz-stat">
+                            <span class="icon"><i data-lucide="bar-chart-3" class="icon-btn"></i></span>
+                            <span>进度 3/10</span>
+                        </div>
+                        <div class="quiz-stat">
+                            <span class="icon"><i data-lucide="flame" class="icon-btn"></i></span>
+                            <span>连对 2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="quiz-progress-bar">
+                    <div class="quiz-progress-fill"></div>
+                </div>
+
+                <!-- Question Content -->
+                <div class="quiz-content">
+                    <div class="quiz-question-header">
+                        <span class="quiz-question-num">第 3 题</span>
+                        <span class="quiz-difficulty medium">中等</span>
+                    </div>
+
+                    <div class="quiz-question-text">
+                        关于过拟合，以下说法正确的是？
+                    </div>
+
+                    <div class="quiz-options">
+                        <div class="quiz-option wrong">
+                            <div class="option-letter">A</div>
+                            <div class="option-text">过拟合意味着模型在训练和测试集上都表现很好</div>
+                        </div>
+                        <div class="quiz-option correct">
+                            <div class="option-letter">B</div>
+                            <div class="option-text">过拟合可以通过增加正则化强度来缓解</div>
+                        </div>
+                        <div class="quiz-option">
+                            <div class="option-letter">C</div>
+                            <div class="option-text">过拟合只发生在深度学习模型中</div>
+                        </div>
+                        <div class="quiz-option">
+                            <div class="option-letter">D</div>
+                            <div class="option-text">增加训练数据量会加剧过拟合</div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback (correct example) -->
+                    <div class="quiz-feedback correct">
+                        <div class="feedback-header correct"><i data-lucide="circle-check" class="icon-btn"></i> 答对了！+10 分</div>
+                        <div class="feedback-text">
+                            <strong>解析：</strong>过拟合是指模型在训练数据上表现优秀，但在未见数据上泛化能力差。正则化通过惩罚模型复杂度来缓解过拟合问题。常见的正则化方法包括 L1 正则化、L2 正则化和 Dropout 等。
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Footer -->
+                <div class="quiz-footer">
+                    <button class="btn-next">下一题 →</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ==================== State 2b: Wrong Answer Feedback ==================== -->
+        <div class="section-label">状态 2b / 答错反馈</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com/quiz/1</div>
+            </div>
+            <div class="mockup-body quiz-page">
+                <div class="quiz-nav">
+                    <div class="quiz-back">← 返回</div>
+                    <div class="quiz-title">机器学习过拟合专题</div>
+                    <div class="quiz-stats">
+                        <div class="quiz-stat">
+                            <span class="icon"><i data-lucide="bar-chart-3" class="icon-btn"></i></span>
+                            <span>进度 5/10</span>
+                        </div>
+                        <div class="quiz-stat">
+                            <span class="icon"><i data-lucide="flame" class="icon-btn"></i></span>
+                            <span>连对 0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="quiz-progress-bar">
+                    <div class="quiz-progress-fill" style="width: 50%"></div>
+                </div>
+                <div class="quiz-content">
+                    <div class="quiz-question-header">
+                        <span class="quiz-question-num">第 5 题</span>
+                        <span class="quiz-difficulty hard">困难</span>
+                    </div>
+                    <div class="quiz-question-text">
+                        以下哪种方法不能有效防止过拟合？
+                    </div>
+                    <div class="quiz-options">
+                        <div class="quiz-option">
+                            <div class="option-letter">A</div>
+                            <div class="option-text">增加训练数据量</div>
+                        </div>
+                        <div class="quiz-option">
+                            <div class="option-letter">B</div>
+                            <div class="option-text">使用 Dropout 正则化</div>
+                        </div>
+                        <div class="quiz-option correct">
+                            <div class="option-letter">C</div>
+                            <div class="option-text">增加模型复杂度</div>
+                        </div>
+                        <div class="quiz-option wrong">
+                            <div class="option-letter">D</div>
+                            <div class="option-text">使用早停法（Early Stopping）</div>
+                        </div>
+                    </div>
+                    <div class="quiz-feedback wrong">
+                        <div class="feedback-header wrong"><i data-lucide="circle-x" class="icon-btn"></i> 答错了</div>
+                        <div class="feedback-text">
+                            <strong>正确答案：C</strong><br><br>
+                            <strong>解析：</strong>增加模型复杂度反而会加剧过拟合。模型越复杂，越容易 memorize 训练数据中的噪声。防止过拟合的有效方法包括：增加数据量、使用正则化（L1/L2/Dropout）、早停法、数据增强等。
+                        </div>
+                    </div>
+                </div>
+                <div class="quiz-footer">
+                    <button class="btn-next">下一题 →</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ==================== State 3: Report ==================== -->
+        <div class="section-label">状态 3 / 学习报告</div>
+        <div class="mockup-frame">
+            <div class="mockup-header">
+                <div class="mockup-dot red"></div>
+                <div class="mockup-dot yellow"></div>
+                <div class="mockup-dot green"></div>
+                <div class="mockup-url">https://ai-study.com/report/1</div>
+            </div>
+            <div class="mockup-body report-page">
+                <!-- Report Header -->
+                <div class="report-header">
+                    <div class="report-emoji"><i data-lucide="target" class="icon-xl"></i></div>
+                    <div class="report-title">闯关完成！</div>
+                    <div class="report-topic">机器学习过拟合专题</div>
+                </div>
+
+                <!-- Stats -->
+                <div class="report-stats">
+                    <div class="report-stat-card">
+                        <div class="report-stat-value">80</div>
+                        <div class="report-stat-label">得分</div>
+                    </div>
+                    <div class="report-stat-card">
+                        <div class="report-stat-value">8/10</div>
+                        <div class="report-stat-label">正确率</div>
+                    </div>
+                    <div class="report-stat-card">
+                        <div class="report-stat-value">5'32"</div>
+                        <div class="report-stat-label">用时</div>
+                    </div>
+                </div>
+
+                <!-- Rating -->
+                <div class="report-rating">
+                    <div class="rating-stars"><i data-lucide="star" class="icon-lg" style="fill:var(--warning);stroke:var(--warning)"></i><i data-lucide="star" class="icon-lg" style="fill:var(--warning);stroke:var(--warning)"></i><i data-lucide="star" class="icon-lg" style="fill:var(--warning);stroke:var(--warning)"></i><i data-lucide="star" class="icon-lg" style="fill:var(--warning);stroke:var(--warning)"></i></div>
+                    <div class="rating-title"><i data-lucide="trophy" class="icon-btn"></i> 知识达人</div>
+                </div>
+
+                <!-- Knowledge Summary -->
+                <div class="report-section">
+                    <div class="report-section-title"><i data-lucide="file-text" class="icon-btn"></i> 知识总结</div>
+                    <div class="report-summary">
+                        本次学习了机器学习的核心概念，包括监督学习与无监督学习的区别、过拟合的定义和解决方法、常见评估指标（准确率、召回率、F1）的应用场景。通过本次闯关，你对过拟合的理解还需要加强。
+                    </div>
+                </div>
+
+                <!-- Mastery -->
+                <div class="report-section">
+                    <div class="report-section-title"><i data-lucide="bar-chart-3" class="icon-btn"></i> 掌握情况</div>
+                    <div class="mastery-list">
+                        <div class="mastery-item good"><i data-lucide="circle-check" class="icon-btn"></i> 监督学习、评估指标、交叉验证</div>
+                        <div class="mastery-item bad"><i data-lucide="circle-x" class="icon-btn"></i> 过拟合、正则化方法</div>
+                    </div>
+                </div>
+
+                <!-- Wrong Questions -->
+                <div class="report-section">
+                    <div class="report-section-title"><i data-lucide="circle-x" class="icon-btn"></i> 错题回顾</div>
+                    <div class="wrong-question">
+                        <div class="wrong-question-text">第 3 题：关于过拟合，以下说法错误的是...</div>
+                        <div class="wrong-question-answers">
+                            <span class="correct">正确答案：B</span>
+                            <span class="user">你的答案：A</span>
+                        </div>
+                    </div>
+                    <div class="wrong-question">
+                        <div class="wrong-question-text">第 7 题：以下哪种正则化方法会将权重压缩为零...</div>
+                        <div class="wrong-question-answers">
+                            <span class="correct">正确答案：A（L1 正则化）</span>
+                            <span class="user">你的答案：C</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="report-actions">
+                    <button class="btn-report primary"><i data-lucide="share-2" class="icon-btn"></i> 分享报告</button>
+                    <button class="btn-report secondary"><i data-lucide="refresh-cw" class="icon-btn"></i> 错题重练</button>
+                    <button class="btn-report secondary"><i data-lucide="home" class="icon-btn"></i> 返回首页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
