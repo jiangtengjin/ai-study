@@ -32,3 +32,6 @@ __pycache__/
 
 # Claude
 .claude/
+
+# 本地私有配置
+application-local.yml

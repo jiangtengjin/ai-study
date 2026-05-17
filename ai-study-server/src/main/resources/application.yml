@@ -3,12 +3,12 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: dev,local
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/ai_study?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
-    password: root
+    password: ${DB_PASSWORD:root}
   servlet:
     multipart:
       max-file-size: 10MB
@@ -39,7 +39,7 @@ sa-token:
 # DeepSeek AI 配置
 ai:
   deepseek:
-    api-key: ${DEEPSEEK_API_KEY:sk-8b2fef53921542628b1ece00af53d7f9}
+    api-key: ${DEEPSEEK_API_KEY:your-api-key-here}
     base-url: https://api.deepseek.com
     model: deepseek-chat
     max-retries: 3
