@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.Map;
 
 @Tag(name = "认证接口")
@@ -27,6 +29,9 @@ public class AuthController {
 
     private final UserService userService;
     private final GithubOAuthService githubOAuthService;
+
+    @Value("${github.frontend-callback-url:http://localhost:5173/oauth/callback}")
+    private String frontendCallbackUrl;
 
     @Operation(summary = "邮箱注册")
     @PostMapping("/register")
@@ -71,21 +76,24 @@ public class AuthController {
 
     @Operation(summary = "获取 GitHub 授权 URL")
     @GetMapping("/github")
-    public R<Map<String, String>> getGithubAuthUrl() {
-        String url = githubOAuthService.getAuthorizationUrl();
+    public R<Map<String, String>> getGithubAuthUrl(HttpSession session) {
+        String url = githubOAuthService.getAuthorizationUrl(session);
         return R.ok(Map.of("url", url));
     }
 
     @Operation(summary = "GitHub OAuth 回调")
     @GetMapping("/github/callback")
-    public void githubCallback(@RequestParam String code, jakarta.servlet.http.HttpServletResponse response) throws Exception {
-        User user = githubOAuthService.handleCallback(code);
+    public void githubCallback(@RequestParam String code,
+                               @RequestParam(required = false) String state,
+                               HttpSession session,
+                               jakarta.servlet.http.HttpServletResponse response) throws Exception {
+        User user = githubOAuthService.handleCallback(code, state, session);
 
         // Sa-Token 登录
         StpUtil.login(user.getId());
 
         // 重定向到前端回调页面
-        response.sendRedirect("http://localhost:5173/oauth/callback?code=success");
+        response.sendRedirect(frontendCallbackUrl + "?code=success");
     }
 
     private void verifyCaptcha(String captcha, HttpSession session) {

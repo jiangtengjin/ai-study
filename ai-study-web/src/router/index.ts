@@ -69,7 +69,9 @@ router.beforeEach(async (to, from, next) => {
     const userStore = useUserStore()
     if (!userInitialized) {
       await userStore.fetchUserInfo()
-      userInitialized = true
+      if (userStore.isLoggedIn) {
+        userInitialized = true
+      }
     }
     if (!userStore.isLoggedIn) {
       next({ path: '/login', query: { redirect: to.fullPath } })

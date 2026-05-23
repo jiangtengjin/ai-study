@@ -3,6 +3,7 @@ package com.aistudy.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ public class User {
 
     private String email;
 
+    @JsonIgnore
     private String password;
 
     /** 认证类型: email/github/wechat */

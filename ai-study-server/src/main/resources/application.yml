@@ -34,7 +34,8 @@ sa-token:
   is-concurrent: true
   is-share: false
   token-style: jwt
-  jwt-secret-key: ${JWT_SECRET:aistudy-jwt-secret-key-2024-please-change-in-production}
+  # 生产环境务必通过 JWT_SECRET 环境变量覆盖此值
+  jwt-secret-key: ${JWT_SECRET:ZTdlZjY0MWEtOGFiOC00ZDg5LWEzYTktNzE5ZGYxM2I4NzRjLXNhLXRva2VuLWp3dA==}
   is-log: false
 
 # DeepSeek AI 配置
@@ -51,6 +52,7 @@ github:
   client-id: ${GITHUB_CLIENT_ID:your-client-id}
   client-secret: ${GITHUB_CLIENT_SECRET:your-client-secret}
   redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/api/v1/auth/github/callback}
+  frontend-callback-url: ${GITHUB_FRONTEND_CALLBACK:http://localhost:5173/oauth/callback}
 
 # Knife4j API 文档
 springdoc:

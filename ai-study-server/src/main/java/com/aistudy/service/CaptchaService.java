@@ -7,8 +7,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.Random;
 
 @Service
 public class CaptchaService {
@@ -18,7 +18,7 @@ public class CaptchaService {
     private static final int CODE_LEN = 4;
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
 
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
 
     /**
      * 生成验证码，返回 [base64图片, 验证码文本]

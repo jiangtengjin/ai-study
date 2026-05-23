@@ -2,12 +2,14 @@ package com.aistudy.controller;
 
 import com.aistudy.common.result.R;
 import com.aistudy.dto.ChangePasswordRequest;
+import com.aistudy.dto.UpdateUserRequest;
 import com.aistudy.entity.User;
 import com.aistudy.service.UserService;
 import com.aistudy.vo.UserVO;
 import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -36,19 +38,18 @@ public class UserController {
 
     @Operation(summary = "更新用户昵称")
     @PutMapping("/info")
-    public R<Void> updateUserInfo(@RequestParam(required = false) String nickname,
-                                  @RequestParam(required = false) String avatar) {
+    public R<Void> updateUserInfo(@Valid @RequestBody UpdateUserRequest request) {
         Long userId = StpUtil.getLoginIdAsLong();
         User user = userService.findById(userId);
         if (user == null) {
             return R.fail(404, "用户不存在");
         }
 
-        if (nickname != null && !nickname.isEmpty()) {
-            user.setNickname(nickname);
+        if (request.getNickname() != null && !request.getNickname().isEmpty()) {
+            user.setNickname(request.getNickname());
         }
-        if (avatar != null && !avatar.isEmpty()) {
-            user.setAvatar(avatar);
+        if (request.getAvatar() != null && !request.getAvatar().isEmpty()) {
+            user.setAvatar(request.getAvatar());
         }
 
         userService.update(user);

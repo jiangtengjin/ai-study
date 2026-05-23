@@ -7,15 +7,16 @@ const request = axios.create({
   timeout: 120000, // AI 生成可能较慢
 })
 
-let hasToken = false
+// 跟踪登录状态（由 user store 调用）
+let hasLoggedIn = false
 
-// 请求拦截器：记录是否曾携带 token
-request.interceptors.request.use((config) => {
-  if (config.headers?.satoken) {
-    hasToken = true
-  }
-  return config
-})
+export function setLoggedIn() {
+  hasLoggedIn = true
+}
+
+export function clearLoggedIn() {
+  hasLoggedIn = false
+}
 
 // 响应拦截器
 request.interceptors.response.use(
@@ -23,11 +24,8 @@ request.interceptors.response.use(
     const data = response.data
     if (data.code !== 200) {
       if (data.code === 401) {
-        if (hasToken) {
-          ElMessage.warning('登录已过期，请重新登录')
-        } else {
-          ElMessage.warning('请先登录')
-        }
+        clearLoggedIn()
+        ElMessage.warning(hasLoggedIn ? '登录已过期，请重新登录' : '请先登录')
         router.push('/login')
       } else {
         ElMessage.error(data.message || '请求失败')
@@ -38,11 +36,8 @@ request.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      if (hasToken) {
-        ElMessage.warning('登录已过期，请重新登录')
-      } else {
-        ElMessage.warning('请先登录')
-      }
+      clearLoggedIn()
+      ElMessage.warning(hasLoggedIn ? '登录已过期，请重新登录' : '请先登录')
       router.push('/login')
     } else {
       ElMessage.error(error.message || '网络错误')

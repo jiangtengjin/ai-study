@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import jakarta.servlet.http.HttpSession;
+
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,25 +44,37 @@ public class GithubOAuthService {
         this.restTemplate = new RestTemplate(factory);
     }
 
+    private static final String STATE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     /**
-     * 获取 GitHub 授权 URL
+     * 获取 GitHub 授权 URL，生成随机 state 防止 CSRF
      */
-    public String getAuthorizationUrl() {
+    public String getAuthorizationUrl(HttpSession session) {
+        String state = generateState();
+        session.setAttribute("github_oauth_state", state);
         return UriComponentsBuilder.fromHttpUrl("https://github.com/login/oauth/authorize")
                 .queryParam("client_id", clientId)
                 .queryParam("redirect_uri", redirectUri)
                 .queryParam("scope", "user:email")
-                .queryParam("state", "github")
+                .queryParam("state", state)
                 .build()
                 .toUriString();
     }
 
     /**
-     * 处理 GitHub 回调
+     * 处理 GitHub 回调，校验 state 参数防止 CSRF
      */
-    public User handleCallback(String code) {
+    public User handleCallback(String code, String state, HttpSession session) {
         if (code == null || code.isEmpty()) {
             throw new BizException(400, "GitHub 授权码不能为空");
+        }
+
+        // 校验 state 参数
+        String expectedState = (String) session.getAttribute("github_oauth_state");
+        session.removeAttribute("github_oauth_state");
+        if (expectedState == null || !expectedState.equals(state)) {
+            throw new BizException(400, "GitHub 授权校验失败，请重试");
         }
 
         // 1. 用 code 换取 access_token
@@ -170,5 +185,13 @@ public class GithubOAuthService {
             log.error("获取 GitHub 用户信息失败", e);
             throw new BizException(500, "获取 GitHub 用户信息失败");
         }
+    }
+
+    private String generateState() {
+        StringBuilder sb = new StringBuilder(32);
+        for (int i = 0; i < 32; i++) {
+            sb.append(STATE_CHARS.charAt(SECURE_RANDOM.nextInt(STATE_CHARS.length())));
+        }
+        return sb.toString();
     }
 }

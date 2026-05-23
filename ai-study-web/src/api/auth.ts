@@ -59,7 +59,7 @@ export function getUserInfo() {
 
 // 更新用户信息
 export function updateUserInfo(data: { nickname?: string; avatar?: string }) {
-  return request.put('/v1/user/info', null, { params: data })
+  return request.put('/v1/user/info', data)
 }
 
 // 获取 GitHub 授权 URL
