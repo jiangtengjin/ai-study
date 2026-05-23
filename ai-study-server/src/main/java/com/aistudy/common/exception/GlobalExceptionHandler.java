@@ -1,5 +1,6 @@
 package com.aistudy.common.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import com.aistudy.common.result.BizException;
 import com.aistudy.common.result.R;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(NotLoginException.class)
+    public R<Void> handleNotLoginException(NotLoginException e) {
+        return R.fail(401, "请先登录");
+    }
 
     @ExceptionHandler(BizException.class)
     public R<Void> handleBizException(BizException e) {

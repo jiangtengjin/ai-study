@@ -6,6 +6,7 @@ import com.aistudy.dto.SubmitAnswerRequest;
 import com.aistudy.service.QuizService;
 import com.aistudy.vo.AnswerResultVO;
 import com.aistudy.vo.CreateQuizVO;
+import com.aistudy.vo.QuestionDetailVO;
 import com.aistudy.vo.QuestionVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,5 +75,23 @@ public class QuizController {
     public R<Void> finishSession(@PathVariable Long sessionId) {
         quizService.finishSession(sessionId);
         return R.ok();
+    }
+
+    /**
+     * 重新练习：基于原会话创建新会话
+     */
+    @PostMapping("/{sessionId}/retry")
+    public R<CreateQuizVO> retrySession(@PathVariable Long sessionId) {
+        CreateQuizVO result = quizService.retrySession(sessionId);
+        return R.ok(result);
+    }
+
+    /**
+     * 获取完整答题记录（含用户答案和解析）
+     */
+    @GetMapping("/{sessionId}/detail")
+    public R<List<QuestionDetailVO>> getQuestionDetails(@PathVariable Long sessionId) {
+        List<QuestionDetailVO> details = quizService.getQuestionDetails(sessionId);
+        return R.ok(details);
     }
 }

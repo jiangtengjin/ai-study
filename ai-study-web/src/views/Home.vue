@@ -1,16 +1,5 @@
 <template>
   <div class="page-container">
-    <!-- 导航栏 -->
-    <nav class="nav">
-      <div class="nav-logo" @click="$router.push('/')">
-        <div class="nav-logo-icon">AI</div>
-        <span>知识闯关</span>
-      </div>
-      <div class="nav-links">
-        <el-button text @click="$router.push('/')">首页</el-button>
-      </div>
-    </nav>
-
     <!-- Hero 区域 -->
     <div class="hero">
       <div class="hero-badge">AI 驱动的智能学习</div>
@@ -104,7 +93,7 @@ import { createQuiz } from '@/api/quiz'
 const router = useRouter()
 const content = ref('')
 const questionCount = ref(10)
-const difficulty = ref('medium')
+const difficulty = ref('balanced')
 const loading = ref(false)
 const inputFocused = ref(false)
 
@@ -112,6 +101,7 @@ const countOptions = [5, 10, 15, 20]
 const difficultyOptions = [
   { label: '简单', value: 'easy' },
   { label: '中等', value: 'medium' },
+  { label: '均衡', value: 'balanced' },
   { label: '困难', value: 'hard' },
 ]
 
@@ -132,7 +122,7 @@ async function handleStart() {
       questionCount: questionCount.value,
       difficulty: difficulty.value,
     })
-    router.push(`/quiz/${res.data.sessionId}`)
+    router.push(`/quiz/${res.sessionId}`)
   } catch (e) {
     // 错误已在 interceptor 中处理
   } finally {

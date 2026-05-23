@@ -38,6 +38,9 @@ class QuizServiceTest {
     private AiService aiService;
 
     @Mock
+    private UserService userService;
+
+    @Mock
     private QuizSessionMapper sessionMapper;
 
     @Mock
@@ -103,7 +106,7 @@ class QuizServiceTest {
                     )
             );
 
-            when(aiService.generateQuestions(anyString(), anyInt())).thenReturn(aiResult);
+            when(aiService.generateQuestions(anyString(), anyInt(), anyString())).thenReturn(aiResult);
             when(sessionMapper.insert(any(QuizSession.class))).thenAnswer(invocation -> {
                 QuizSession s = invocation.getArgument(0);
                 s.setId(1L);
@@ -120,7 +123,7 @@ class QuizServiceTest {
             assertEquals(1, result.getQuestionCount());
             assertEquals("answering", result.getStatus());
 
-            verify(aiService).generateQuestions(anyString(), eq(5));
+            verify(aiService).generateQuestions(anyString(), eq(5), eq("medium"));
             verify(sessionMapper).insert(any(QuizSession.class));
             verify(questionMapper).insert(any(Question.class));
         }
@@ -135,7 +138,7 @@ class QuizServiceTest {
 
             Map<String, Object> aiResult = Map.of("title", "测试", "questions", List.of());
 
-            when(aiService.generateQuestions(anyString(), anyInt())).thenReturn(aiResult);
+            when(aiService.generateQuestions(anyString(), anyInt(), anyString())).thenReturn(aiResult);
             when(sessionMapper.insert(any(QuizSession.class))).thenAnswer(invocation -> {
                 QuizSession s = invocation.getArgument(0);
                 s.setId(1L);
@@ -155,7 +158,7 @@ class QuizServiceTest {
 
             Map<String, Object> aiResult = Map.of("title", "测试");
 
-            when(aiService.generateQuestions(anyString(), anyInt())).thenReturn(aiResult);
+            when(aiService.generateQuestions(anyString(), anyInt(), anyString())).thenReturn(aiResult);
             when(sessionMapper.insert(any(QuizSession.class))).thenAnswer(invocation -> {
                 QuizSession s = invocation.getArgument(0);
                 s.setId(1L);
@@ -173,7 +176,7 @@ class QuizServiceTest {
             request.setQuestionCount(5);
             request.setDifficulty("medium");
 
-            when(aiService.generateQuestions(anyString(), anyInt()))
+            when(aiService.generateQuestions(anyString(), anyInt(), anyString()))
                     .thenThrow(new RuntimeException("网络异常"));
             when(sessionMapper.insert(any(QuizSession.class))).thenAnswer(invocation -> {
                 QuizSession s = invocation.getArgument(0);
@@ -422,8 +425,8 @@ class QuizServiceTest {
             quizService.finishSession(1L);
 
             assertEquals(5, testSession.getCorrectCount());
-            // 基础分 = 70, 难度分(medium) = 5, 连对分 = 15 → 总分 = 90
-            assertEquals(90, testSession.getScore());
+            // 基础分 = 85, 难度分(medium) = 5, 连对分 = 5 → 总分 = 95
+            assertEquals(95, testSession.getScore());
         }
 
         @Test
@@ -445,8 +448,8 @@ class QuizServiceTest {
             quizService.finishSession(1L);
 
             assertEquals(0, testSession.getCorrectCount());
-            // 基础分 = 0, 难度分(medium) = 5, 连对分 = 0 → 总分 = 5
-            assertEquals(5, testSession.getScore());
+            // 基础分 = 0, 难度分(medium) = 0, 连对分 = 0 → 总分 = 0
+            assertEquals(0, testSession.getScore());
         }
 
         @Test
@@ -468,8 +471,8 @@ class QuizServiceTest {
 
             quizService.finishSession(1L);
 
-            // 基础分 = 70, 难度分(hard) = 10, 连对分 = 15 → 总分 = 95
-            assertEquals(95, testSession.getScore());
+            // 基础分 = 85, 难度分(hard) = 10, 连对分 = 5 → 总分 = 100
+            assertEquals(100, testSession.getScore());
         }
 
         @Test
@@ -491,8 +494,8 @@ class QuizServiceTest {
 
             quizService.finishSession(1L);
 
-            // 基础分 = 70, 难度分(easy) = 0, 连对分 = 15 → 总分 = 85
-            assertEquals(85, testSession.getScore());
+            // 基础分 = 85, 难度分(easy) = 0, 连对分 = 5 → 总分 = 90
+            assertEquals(90, testSession.getScore());
         }
 
         @Test

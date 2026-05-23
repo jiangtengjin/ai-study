@@ -23,6 +23,7 @@ export interface QuestionVO {
   optionB: string
   optionC: string
   optionD: string
+  score: number
 }
 
 export interface AnswerResult {
@@ -44,6 +45,22 @@ export interface WrongQuestionVO {
   explanation: string
 }
 
+export interface QuestionDetailVO {
+  questionId: number
+  questionIndex: number
+  questionContent: string
+  optionA: string
+  optionB: string
+  optionC: string
+  optionD: string
+  correctAnswer: string
+  userAnswer: string | null
+  isCorrect: number | null
+  explanation: string
+  knowledgePoint: string
+  answerTimeSeconds: number | null
+}
+
 export interface ReportVO {
   sessionId: number
   title: string
@@ -60,12 +77,12 @@ export interface ReportVO {
 
 // 创建答题会话
 export function createQuiz(data: CreateQuizParams) {
-  return request.post<any, { data: CreateQuizResult }>('/v1/quiz/create', data)
+  return request.post<CreateQuizResult>('/v1/quiz/create', data)
 }
 
 // 获取所有题目
 export function getQuestions(sessionId: number) {
-  return request.get<any, { data: QuestionVO[] }>(`/v1/quiz/${sessionId}/questions`)
+  return request.get<QuestionVO[]>(`/v1/quiz/${sessionId}/questions`)
 }
 
 // 提交答案
@@ -74,15 +91,25 @@ export function submitAnswer(sessionId: number, data: {
   userAnswer: string
   answerTimeSeconds: number
 }) {
-  return request.post<any, { data: AnswerResult }>(`/v1/quiz/${sessionId}/answer`, data)
+  return request.post<AnswerResult>(`/v1/quiz/${sessionId}/answer`, data)
 }
 
 // 结束答题
 export function finishSession(sessionId: number) {
-  return request.post<any, { data: null }>(`/v1/quiz/${sessionId}/finish`)
+  return request.post<void>(`/v1/quiz/${sessionId}/finish`)
 }
 
 // 获取学习报告
 export function getReport(sessionId: number) {
-  return request.get<any, { data: ReportVO }>(`/v1/report/${sessionId}`)
+  return request.get<ReportVO>(`/v1/report/${sessionId}`)
+}
+
+// 获取完整答题记录（含用户答案和解析）
+export function getQuestionDetails(sessionId: number) {
+  return request.get<QuestionDetailVO[]>(`/v1/quiz/${sessionId}/detail`)
+}
+
+// 重新练习：基于原会话创建新会话
+export function retrySession(sessionId: number) {
+  return request.post<CreateQuizResult>(`/v1/quiz/${sessionId}/retry`)
 }

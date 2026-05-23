@@ -24,6 +24,13 @@
         <knife4j.version>4.5.0</knife4j.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>aliyun</id>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Spring Boot Web -->
         <dependency>
@@ -31,7 +38,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Spring Boot Data Redis (MVP 阶段暂不启用) -->
+        <!-- Spring Security Crypto (for BCrypt) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Data Redis (需要先安装 Redis) -->
         <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -60,18 +73,12 @@
             <version>${sa-token.version}</version>
         </dependency>
 
-        <!-- Sa-Token Redis (MVP 阶段暂不启用) -->
-        <!--
+        <!-- Sa-Token JWT (token 自包含，无需 Redis，重启不丢失) -->
         <dependency>
             <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-redis-jackson</artifactId>
+            <artifactId>sa-token-jwt</artifactId>
             <version>${sa-token.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-pool2</artifactId>
-        </dependency>
-        -->
 
         <!-- Knife4j API 文档 -->
         <dependency>
@@ -115,6 +122,16 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

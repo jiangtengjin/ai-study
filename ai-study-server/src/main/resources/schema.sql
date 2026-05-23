@@ -9,9 +9,10 @@ CREATE TABLE IF NOT EXISTS t_user (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nickname VARCHAR(50) NOT NULL COMMENT '昵称',
     avatar VARCHAR(500) DEFAULT NULL COMMENT '头像URL',
-    auth_type VARCHAR(20) NOT NULL COMMENT '认证类型: wechat/github',
-    auth_id VARCHAR(100) NOT NULL COMMENT '第三方平台用户ID',
     email VARCHAR(100) DEFAULT NULL COMMENT '邮箱',
+    password VARCHAR(100) DEFAULT NULL COMMENT '密码(BCrypt加密)',
+    auth_type VARCHAR(20) NOT NULL DEFAULT 'email' COMMENT '认证类型: email/github/wechat',
+    auth_id VARCHAR(100) DEFAULT NULL COMMENT '第三方平台用户ID',
     vip_level TINYINT DEFAULT 0 COMMENT 'VIP等级',
     vip_expire_time DATETIME DEFAULT NULL COMMENT 'VIP过期时间',
     total_quizzes INT DEFAULT 0 COMMENT '总答题次数',
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS t_user (
     last_study_date DATE DEFAULT NULL COMMENT '最后学习日期',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_email (email),
     UNIQUE KEY uk_auth (auth_type, auth_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
@@ -38,6 +40,9 @@ CREATE TABLE IF NOT EXISTS t_quiz_session (
     status TINYINT DEFAULT 0 COMMENT '状态: 0-进行中 1-已完成 2-中途退出',
     started_at DATETIME DEFAULT NULL COMMENT '开始时间',
     finished_at DATETIME DEFAULT NULL COMMENT '结束时间',
+    knowledge_summary TEXT DEFAULT NULL COMMENT 'AI生成的知识总结',
+    strength_points TEXT DEFAULT NULL COMMENT '擅长知识点JSON',
+    weak_points TEXT DEFAULT NULL COMMENT '薄弱知识点JSON',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user_id (user_id),
     INDEX idx_created_at (created_at)
@@ -58,6 +63,7 @@ CREATE TABLE IF NOT EXISTS t_question (
     correct_answer VARCHAR(10) NOT NULL COMMENT '正确答案',
     explanation TEXT COMMENT '知识讲解',
     knowledge_point VARCHAR(200) DEFAULT NULL COMMENT '关联知识点',
+    score INT DEFAULT 0 COMMENT '题目分值',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_session_id (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='题目表';

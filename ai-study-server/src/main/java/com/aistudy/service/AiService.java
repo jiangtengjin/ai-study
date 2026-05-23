@@ -43,10 +43,17 @@ public class AiService {
     /**
      * 生成闯关题目
      */
-    public Map<String, Object> generateQuestions(String content, int count) {
+    public Map<String, Object> generateQuestions(String content, int count, String difficulty) {
+        String difficultyLabel = switch (difficulty) {
+            case "easy" -> "easy（简单）";
+            case "hard" -> "hard（困难）";
+            case "balanced" -> "balanced（均衡）";
+            default -> "medium（中等）";
+        };
         String prompt = loadPrompt("prompts/generate-questions.txt")
                 .replace("{content}", content)
-                .replace("{count}", String.valueOf(count));
+                .replace("{count}", String.valueOf(count))
+                .replace("{difficulty}", difficultyLabel);
 
         String responseText = callAiApi(prompt);
         return parseJsonResponse(responseText);

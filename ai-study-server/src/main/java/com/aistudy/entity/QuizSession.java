@@ -37,5 +37,14 @@ public class QuizSession {
 
     private LocalDateTime finishedAt;
 
+    /** AI 生成的知识总结 */
+    private String knowledgeSummary;
+
+    /** 擅长知识点（JSON 数组） */
+    private String strengthPoints;
+
+    /** 薄弱知识点（JSON 数组） */
+    private String weakPoints;
+
     private LocalDateTime createdAt;
 }

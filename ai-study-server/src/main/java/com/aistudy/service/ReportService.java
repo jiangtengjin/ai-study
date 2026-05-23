@@ -10,6 +10,8 @@ import com.aistudy.mapper.QuizSessionMapper;
 import com.aistudy.vo.ReportVO;
 import com.aistudy.vo.WrongQuestionVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class ReportService {
     private final QuizSessionMapper sessionMapper;
     private final QuestionMapper questionMapper;
     private final QuizAnswerMapper answerMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 生成学习报告
@@ -87,30 +90,46 @@ public class ReportService {
         // 计算评级
         String rating = getRating(session.getScore());
 
-        // 调用 AI 生成知识总结
-        String knowledgeSummary = "";
-        List<String> strengthPoints = new ArrayList<>(correctPoints);
-        List<String> weakPoints = new ArrayList<>(wrongPoints);
+        // 生成知识总结（优先读取缓存）
+        String knowledgeSummary = session.getKnowledgeSummary();
+        List<String> strengthPoints;
+        List<String> weakPoints;
 
-        try {
-            Map<String, Object> aiResult = aiService.generateReportSummary(
-                    session.getKnowledgeContent(),
-                    session.getQuestionCount(),
-                    session.getCorrectCount(),
-                    strengthPoints,
-                    weakPoints
-            );
-            knowledgeSummary = (String) aiResult.getOrDefault("summary", "");
-            if (aiResult.containsKey("strengths")) {
-                strengthPoints = (List<String>) aiResult.get("strengths");
+        if (knowledgeSummary != null && !knowledgeSummary.isEmpty()) {
+            // 已有缓存，直接读取
+            strengthPoints = parseJsonList(session.getStrengthPoints());
+            weakPoints = parseJsonList(session.getWeakPoints());
+        } else {
+            // 首次生成，调用 AI 并持久化
+            strengthPoints = new ArrayList<>(correctPoints);
+            weakPoints = new ArrayList<>(wrongPoints);
+
+            try {
+                Map<String, Object> aiResult = aiService.generateReportSummary(
+                        session.getKnowledgeContent(),
+                        session.getQuestionCount(),
+                        session.getCorrectCount(),
+                        strengthPoints,
+                        weakPoints
+                );
+                knowledgeSummary = (String) aiResult.getOrDefault("summary", "");
+                if (aiResult.containsKey("strengths")) {
+                    strengthPoints = (List<String>) aiResult.get("strengths");
+                }
+                if (aiResult.containsKey("weaknesses")) {
+                    weakPoints = (List<String>) aiResult.get("weaknesses");
+                }
+            } catch (Exception e) {
+                log.warn("AI 生成知识总结失败，使用默认总结", e);
+                knowledgeSummary = String.format("本次学习了「%s」相关内容，共 %d 题，答对 %d 题。",
+                        session.getKnowledgeTitle(), session.getQuestionCount(), session.getCorrectCount());
             }
-            if (aiResult.containsKey("weaknesses")) {
-                weakPoints = (List<String>) aiResult.get("weaknesses");
-            }
-        } catch (Exception e) {
-            log.warn("AI 生成知识总结失败，使用默认总结", e);
-            knowledgeSummary = String.format("本次学习了「%s」相关内容，共 %d 题，答对 %d 题。",
-                    session.getKnowledgeTitle(), session.getQuestionCount(), session.getCorrectCount());
+
+            // 持久化报告数据
+            session.setKnowledgeSummary(knowledgeSummary);
+            session.setStrengthPoints(toJson(strengthPoints));
+            session.setWeakPoints(toJson(weakPoints));
+            sessionMapper.updateById(session);
         }
 
         return ReportVO.builder()
@@ -126,6 +145,23 @@ public class ReportService {
                 .strengthPoints(strengthPoints)
                 .weakPoints(weakPoints)
                 .build();
+    }
+
+    private String toJson(List<String> list) {
+        try {
+            return objectMapper.writeValueAsString(list);
+        } catch (Exception e) {
+            return "[]";
+        }
+    }
+
+    private List<String> parseJsonList(String json) {
+        if (json == null || json.isEmpty()) return new ArrayList<>();
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     /**

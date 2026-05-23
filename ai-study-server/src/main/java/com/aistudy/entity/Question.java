@@ -38,5 +38,7 @@ public class Question {
 
     private String knowledgePoint;
 
+    private Integer score;
+
     private LocalDateTime createdAt;
 }

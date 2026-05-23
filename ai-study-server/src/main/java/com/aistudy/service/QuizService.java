@@ -1,5 +1,6 @@
 package com.aistudy.service;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.aistudy.common.result.BizException;
 import com.aistudy.dto.CreateQuizRequest;
 import com.aistudy.dto.SubmitAnswerRequest;
@@ -11,6 +12,7 @@ import com.aistudy.mapper.QuizAnswerMapper;
 import com.aistudy.mapper.QuizSessionMapper;
 import com.aistudy.vo.AnswerResultVO;
 import com.aistudy.vo.CreateQuizVO;
+import com.aistudy.vo.QuestionDetailVO;
 import com.aistudy.vo.QuestionVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -29,6 +33,7 @@ import java.util.Map;
 public class QuizService {
 
     private final AiService aiService;
+    private final UserService userService;
     private final QuizSessionMapper sessionMapper;
     private final QuestionMapper questionMapper;
     private final QuizAnswerMapper answerMapper;
@@ -38,8 +43,12 @@ public class QuizService {
      */
     @Transactional
     public CreateQuizVO createSession(CreateQuizRequest request) {
-        // 1. 创建会话
+        // 1. 获取当前用户ID
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        // 2. 创建会话
         QuizSession session = new QuizSession();
+        session.setUserId(userId);
         session.setKnowledgeContent(request.getContent());
         session.setQuestionCount(request.getQuestionCount());
         session.setDifficulty(request.getDifficulty());
@@ -51,7 +60,7 @@ public class QuizService {
         // 2. 调用 AI 生成题目
         try {
             Map<String, Object> result = aiService.generateQuestions(
-                    request.getContent(), request.getQuestionCount());
+                    request.getContent(), request.getQuestionCount(), request.getDifficulty());
 
             String title = (String) result.getOrDefault("title", "知识闯关");
             session.setKnowledgeTitle(title);
@@ -77,6 +86,8 @@ public class QuizService {
                 question.setCorrectAnswer(getStringValue(q, "answer", "A"));
                 question.setExplanation(getStringValue(q, "explanation", ""));
                 question.setKnowledgePoint(getStringValue(q, "knowledgePoint", ""));
+                int questionScore = getIntValue(q, "score", 0);
+                question.setScore(questionScore);
                 question.setCreatedAt(LocalDateTime.now());
                 questionMapper.insert(question);
             }
@@ -98,6 +109,62 @@ public class QuizService {
             log.error("创建答题会话失败", e);
             throw new BizException(1001, "AI 生成题目失败，请稍后重试");
         }
+    }
+
+    /**
+     * 重新练习：创建新会话，复制原会话的题目
+     */
+    @Transactional
+    public CreateQuizVO retrySession(Long sessionId) {
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        QuizSession originalSession = sessionMapper.selectById(sessionId);
+        if (originalSession == null) {
+            throw new BizException(1003, "原答题会话不存在");
+        }
+
+        // 创建新会话
+        QuizSession newSession = new QuizSession();
+        newSession.setUserId(userId);
+        newSession.setKnowledgeContent(originalSession.getKnowledgeContent());
+        newSession.setKnowledgeTitle(originalSession.getKnowledgeTitle());
+        newSession.setQuestionCount(originalSession.getQuestionCount());
+        newSession.setDifficulty(originalSession.getDifficulty());
+        newSession.setStatus(0);
+        newSession.setStartedAt(LocalDateTime.now());
+        newSession.setCreatedAt(LocalDateTime.now());
+        sessionMapper.insert(newSession);
+
+        // 复制原会话的题目
+        List<Question> originalQuestions = questionMapper.selectList(
+                new LambdaQueryWrapper<Question>()
+                        .eq(Question::getSessionId, sessionId)
+                        .orderByAsc(Question::getQuestionIndex));
+
+        for (Question original : originalQuestions) {
+            Question question = new Question();
+            question.setSessionId(newSession.getId());
+            question.setQuestionIndex(original.getQuestionIndex());
+            question.setQuestionType(original.getQuestionType());
+            question.setDifficulty(original.getDifficulty());
+            question.setQuestionContent(original.getQuestionContent());
+            question.setOptionA(original.getOptionA());
+            question.setOptionB(original.getOptionB());
+            question.setOptionC(original.getOptionC());
+            question.setOptionD(original.getOptionD());
+            question.setCorrectAnswer(original.getCorrectAnswer());
+            question.setExplanation(original.getExplanation());
+            question.setKnowledgePoint(original.getKnowledgePoint());
+            question.setCreatedAt(LocalDateTime.now());
+            questionMapper.insert(question);
+        }
+
+        return CreateQuizVO.builder()
+                .sessionId(newSession.getId())
+                .title(originalSession.getKnowledgeTitle())
+                .questionCount(originalQuestions.size())
+                .status("answering")
+                .build();
     }
 
     /**
@@ -160,11 +227,14 @@ public class QuizService {
         boolean isCorrect = question.getCorrectAnswer()
                 .equalsIgnoreCase(request.getUserAnswer().trim());
 
+        // 获取当前用户ID
+        Long userId = session.getUserId();
+
         // 保存答题记录
         QuizAnswer answer = new QuizAnswer();
         answer.setSessionId(sessionId);
         answer.setQuestionId(request.getQuestionId());
-        answer.setUserId(0L); // MVP 无用户体系
+        answer.setUserId(userId);
         answer.setUserAnswer(request.getUserAnswer().trim().toUpperCase());
         answer.setIsCorrect(isCorrect ? 1 : 0);
         answer.setAnswerTimeSeconds(request.getAnswerTimeSeconds());
@@ -207,6 +277,13 @@ public class QuizService {
                 new LambdaQueryWrapper<QuizAnswer>()
                         .eq(QuizAnswer::getSessionId, sessionId));
 
+        // 获取题目及其分值
+        List<Question> questions = questionMapper.selectList(
+                new LambdaQueryWrapper<Question>()
+                        .eq(Question::getSessionId, sessionId));
+        Map<Long, Question> questionMap = questions.stream()
+                .collect(Collectors.toMap(Question::getId, q -> q));
+
         int correctCount = (int) answers.stream()
                 .filter(a -> a.getIsCorrect() == 1)
                 .count();
@@ -214,8 +291,8 @@ public class QuizService {
         int maxStreak = calculateMaxStreak(sessionId);
         int totalQuestions = session.getQuestionCount();
 
-        // 计算得分
-        int score = calculateScore(correctCount, totalQuestions, session.getDifficulty(), maxStreak);
+        // 按每题分值计算得分
+        int score = calculateScoreByQuestionScore(answers, questionMap);
 
         // 更新会话
         session.setCorrectCount(correctCount);
@@ -230,6 +307,11 @@ public class QuizService {
         }
 
         sessionMapper.updateById(session);
+
+        // 更新用户学习统计
+        if (session.getUserId() != null && session.getUserId() > 0) {
+            userService.updateStudyStats(session.getUserId(), correctCount, totalQuestions);
+        }
     }
 
     /**
@@ -296,21 +378,88 @@ public class QuizService {
     }
 
     /**
-     * 计算得分
-     * 基础分 = 正确率 × 70
-     * 难度加分 = 难度系数 × 5 (easy=0, medium=1, hard=2)
-     * 连对加分 = 最大连对数 / 总题数 × 15
+     * 按每题分值计算得分：答对的题目分值累加
      */
-    private int calculateScore(int correctCount, int totalCount, String difficulty, int maxStreak) {
-        double baseScore = (double) correctCount / totalCount * 70;
-        int difficultyBonus = switch (difficulty) {
-            case "easy" -> 0;
-            case "hard" -> 2;
-            default -> 1;
-        };
-        double difficultyScore = difficultyBonus * 5.0;
-        double streakScore = (double) maxStreak / totalCount * 15;
-        return Math.min(100, (int) (baseScore + difficultyScore + streakScore));
+    private int calculateScoreByQuestionScore(List<QuizAnswer> answers, Map<Long, Question> questionMap) {
+        int totalScore = 0;
+        boolean hasScoreData = false;
+
+        for (QuizAnswer answer : answers) {
+            Question question = questionMap.get(answer.getQuestionId());
+            if (question == null) continue;
+
+            if (question.getScore() != null && question.getScore() > 0) {
+                hasScoreData = true;
+                if (answer.getIsCorrect() == 1) {
+                    totalScore += question.getScore();
+                }
+            }
+        }
+
+        // 如果题目没有分值数据，回退到旧公式
+        if (!hasScoreData) {
+            int correctCount = (int) answers.stream().filter(a -> a.getIsCorrect() == 1).count();
+            int totalCount = answers.size();
+            int maxStreak = 0;
+            int currentStreak = 0;
+            for (QuizAnswer a : answers) {
+                if (a.getIsCorrect() == 1) {
+                    currentStreak++;
+                    maxStreak = Math.max(maxStreak, currentStreak);
+                } else {
+                    currentStreak = 0;
+                }
+            }
+            return calculateScoreFallback(correctCount, totalCount, maxStreak);
+        }
+
+        return Math.min(100, totalScore);
+    }
+
+    /**
+     * 回退得分公式（题目无分值时使用）
+     */
+    private int calculateScoreFallback(int correctCount, int totalCount, int maxStreak) {
+        double correctRate = (double) correctCount / totalCount;
+        double baseScore = correctRate * 85;
+        double streakScore = (double) maxStreak / totalCount * 5;
+        return Math.min(100, (int) Math.round(baseScore + streakScore + 10));
+    }
+
+    /**
+     * 获取会话的完整答题记录（含用户答案和解析）
+     */
+    public List<QuestionDetailVO> getQuestionDetails(Long sessionId) {
+        List<Question> questions = questionMapper.selectList(
+                new LambdaQueryWrapper<Question>()
+                        .eq(Question::getSessionId, sessionId)
+                        .orderByAsc(Question::getQuestionIndex));
+
+        List<QuizAnswer> answers = answerMapper.selectList(
+                new LambdaQueryWrapper<QuizAnswer>()
+                        .eq(QuizAnswer::getSessionId, sessionId));
+
+        Map<Long, QuizAnswer> answerMap = answers.stream()
+                .collect(Collectors.toMap(QuizAnswer::getQuestionId, a -> a));
+
+        return questions.stream().map(q -> {
+            QuizAnswer answer = answerMap.get(q.getId());
+            return QuestionDetailVO.builder()
+                    .questionId(q.getId())
+                    .questionIndex(q.getQuestionIndex())
+                    .questionContent(q.getQuestionContent())
+                    .optionA(q.getOptionA())
+                    .optionB(q.getOptionB())
+                    .optionC(q.getOptionC())
+                    .optionD(q.getOptionD())
+                    .correctAnswer(q.getCorrectAnswer())
+                    .userAnswer(answer != null ? answer.getUserAnswer() : null)
+                    .isCorrect(answer != null ? answer.getIsCorrect() : null)
+                    .explanation(q.getExplanation())
+                    .knowledgePoint(q.getKnowledgePoint())
+                    .answerTimeSeconds(answer != null ? answer.getAnswerTimeSeconds() : null)
+                    .build();
+        }).toList();
     }
 
     /**
@@ -327,11 +476,23 @@ public class QuizService {
                 .optionB(q.getOptionB())
                 .optionC(q.getOptionC())
                 .optionD(q.getOptionD())
+                .score(q.getScore())
                 .build();
     }
 
     private String getStringValue(Map<String, Object> map, String key, String defaultValue) {
         Object value = map.get(key);
         return value != null ? value.toString() : defaultValue;
+    }
+
+    private int getIntValue(Map<String, Object> map, String key, int defaultValue) {
+        Object value = map.get(key);
+        if (value == null) return defaultValue;
+        if (value instanceof Number) return ((Number) value).intValue();
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 }

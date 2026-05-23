@@ -16,4 +16,5 @@ public class QuestionVO {
     private String optionB;
     private String optionC;
     private String optionD;
+    private Integer score;
 }

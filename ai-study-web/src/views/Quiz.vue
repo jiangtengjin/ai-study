@@ -37,6 +37,7 @@
         <span class="quiz-difficulty" :class="currentQuestion.difficulty">
           {{ difficultyLabel(currentQuestion.difficulty) }}
         </span>
+        <span class="quiz-point" v-if="currentQuestion.score">{{ currentQuestion.score }} 分</span>
       </div>
 
       <div class="quiz-question-text">
@@ -113,7 +114,7 @@ const progressPercent = computed(() =>
 )
 
 function difficultyLabel(d: string) {
-  const map: Record<string, string> = { easy: '简单', medium: '中等', hard: '困难' }
+  const map: Record<string, string> = { easy: '简单', medium: '中等', hard: '困难', balanced: '均衡' }
   return map[d] || d
 }
 
@@ -153,7 +154,7 @@ async function handleSelectOption(letter: string) {
       userAnswer: letter,
       answerTimeSeconds: Math.floor((Date.now() - questionStartTime) / 1000),
     })
-    quizStore.setAnswer(currentQuestion.value.id, res.data)
+    quizStore.setAnswer(currentQuestion.value.id, res)
   } catch (e) {
     quizStore.selectedAnswer = null
   }
@@ -165,7 +166,7 @@ async function handleNext() {
     try {
       await finishSession(sessionId.value)
       quizStore.reset()
-      router.push(`/report/${sessionId.value}`)
+      router.push(`/report/${sessionId.value}?from=quiz`)
     } catch (e) {
       // 错误已处理
     }
@@ -195,7 +196,7 @@ onMounted(async () => {
     loadingQuestions.value = true
     try {
       const res = await getQuestions(sessionId.value)
-      quizStore.initQuiz(sessionId.value, '知识闯关', res.data)
+      quizStore.initQuiz(sessionId.value, '知识闯关', res)
     } catch (e) {
       ElMessage.error('加载题目失败')
       router.push('/')
@@ -322,6 +323,15 @@ onMounted(async () => {
 .quiz-difficulty.hard {
   background: var(--danger-light);
   color: var(--danger);
+}
+
+.quiz-point {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(108, 92, 231, 0.08);
+  color: var(--primary);
 }
 
 .quiz-question-text {

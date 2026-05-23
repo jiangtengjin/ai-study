@@ -3,11 +3,16 @@
     <!-- Loading -->
     <div v-if="loading" class="report-loading">
       <div class="spinner"></div>
-      <p>正在生成学习报告...</p>
+      <p>{{ route.query.from === 'quiz' ? '正在生成学习报告...' : '正在加载学习报告...' }}</p>
     </div>
 
     <!-- 报告内容 -->
     <div v-else-if="report" class="report-page">
+      <!-- 返回按钮 -->
+      <div class="report-back" @click="route.query.from === 'quiz' ? router.push('/') : router.back()">
+        <el-icon><ArrowLeft /></el-icon> 返回
+      </div>
+
       <!-- 报告头部 -->
       <div class="report-header">
         <div class="report-emoji">
@@ -93,6 +98,52 @@
         </div>
       </div>
 
+      <!-- 完整答题记录 -->
+      <div v-if="questionDetails.length > 0" class="report-section">
+        <div class="report-section-title">
+          <el-icon><Document /></el-icon>
+          答题记录
+        </div>
+        <div v-for="q in questionDetails" :key="q.questionId" class="detail-question">
+          <div class="detail-question-header">
+            <span class="detail-question-index">第 {{ q.questionIndex }} 题</span>
+            <span v-if="q.isCorrect === 1" class="detail-status correct">回答正确</span>
+            <span v-else-if="q.isCorrect === 0" class="detail-status wrong">回答错误</span>
+            <span v-else class="detail-status neutral">未作答</span>
+          </div>
+          <div class="detail-question-text">{{ q.questionContent }}</div>
+          <div class="detail-options">
+            <div :class="['detail-option', getOptionClass('A', q)]">
+              <span class="detail-option-letter">A</span>
+              <span>{{ q.optionA }}</span>
+            </div>
+            <div :class="['detail-option', getOptionClass('B', q)]">
+              <span class="detail-option-letter">B</span>
+              <span>{{ q.optionB }}</span>
+            </div>
+            <div :class="['detail-option', getOptionClass('C', q)]">
+              <span class="detail-option-letter">C</span>
+              <span>{{ q.optionC }}</span>
+            </div>
+            <div :class="['detail-option', getOptionClass('D', q)]">
+              <span class="detail-option-letter">D</span>
+              <span>{{ q.optionD }}</span>
+            </div>
+          </div>
+          <div class="detail-answers">
+            <span v-if="q.userAnswer" class="detail-answer-item">
+              你的答案：<span :class="q.isCorrect === 1 ? 'text-correct' : 'text-wrong'">{{ q.userAnswer }}</span>
+            </span>
+            <span class="detail-answer-item">
+              正确答案：<span class="text-correct">{{ q.correctAnswer }}</span>
+            </span>
+          </div>
+          <div v-if="q.explanation" class="detail-explanation">
+            <strong>解析：</strong>{{ q.explanation }}
+          </div>
+        </div>
+      </div>
+
       <!-- 操作按钮 -->
       <div class="report-actions">
         <el-button type="primary" class="btn-report primary" @click="$router.push('/')">
@@ -116,13 +167,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getReport } from '@/api/quiz'
-import type { ReportVO } from '@/api/quiz'
+import { getReport, getQuestionDetails } from '@/api/quiz'
+import type { ReportVO, QuestionDetailVO } from '@/api/quiz'
 
 const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
 const report = ref<ReportVO | null>(null)
+const questionDetails = ref<QuestionDetailVO[]>([])
 
 const sessionId = computed(() => Number(route.params.sessionId))
 
@@ -147,10 +199,20 @@ function handleRetryWrong() {
   ElMessage.info('错题重练功能即将上线')
 }
 
+function getOptionClass(option: string, q: QuestionDetailVO) {
+  if (option === q.correctAnswer) return 'correct'
+  if (option === q.userAnswer && q.isCorrect === 0) return 'wrong'
+  return 'neutral'
+}
+
 onMounted(async () => {
   try {
-    const res = await getReport(sessionId.value)
-    report.value = res.data
+    const [reportRes, detailsRes] = await Promise.all([
+      getReport(sessionId.value),
+      getQuestionDetails(sessionId.value)
+    ])
+    report.value = reportRes
+    questionDetails.value = detailsRes
   } catch (e) {
     ElMessage.error('获取报告失败')
     router.push('/')
@@ -188,6 +250,24 @@ onMounted(async () => {
   padding: 48px 40px;
   max-width: 800px;
   margin: 0 auto;
+}
+
+.report-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-bottom: 24px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.report-back:hover {
+  color: var(--primary);
+  background: rgba(108, 92, 231, 0.06);
 }
 
 .report-header {
@@ -375,6 +455,153 @@ onMounted(async () => {
   background: white !important;
   color: var(--text-secondary) !important;
   border: 1px solid var(--border) !important;
+}
+
+.detail-question {
+  padding: 16px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.detail-question:last-child {
+  margin-bottom: 0;
+}
+
+.detail-question-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.detail-question-index {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.detail-status {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.detail-status.correct {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.detail-status.wrong {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.detail-status.neutral {
+  background: var(--border);
+  color: var(--text-light);
+}
+
+.detail-question-text {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.detail-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.detail-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.detail-option.correct {
+  background: var(--success-light);
+  color: var(--success);
+  font-weight: 600;
+}
+
+.detail-option.wrong {
+  background: var(--danger-light);
+  color: var(--danger);
+  text-decoration: line-through;
+}
+
+.detail-option.neutral {
+  background: white;
+  color: var(--text-secondary);
+}
+
+.detail-option-letter {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.detail-option.correct .detail-option-letter {
+  background: var(--success);
+  color: white;
+}
+
+.detail-option.wrong .detail-option-letter {
+  background: var(--danger);
+  color: white;
+}
+
+.detail-option.neutral .detail-option-letter {
+  background: var(--border);
+  color: var(--text-secondary);
+}
+
+.detail-answers {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.detail-answer-item {
+  font-weight: 500;
+}
+
+.text-correct {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.text-wrong {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.detail-explanation {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.detail-explanation strong {
+  color: var(--text-primary);
 }
 
 @media (max-width: 768px) {

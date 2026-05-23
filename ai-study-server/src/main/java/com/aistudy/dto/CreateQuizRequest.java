@@ -17,5 +17,5 @@ public class CreateQuizRequest {
     @Max(value = 20, message = "最多 20 题")
     private int questionCount = 10;
 
-    private String difficulty = "medium";
+    private String difficulty = "balanced";
 }

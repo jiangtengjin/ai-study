@@ -33,7 +33,8 @@ sa-token:
   active-timeout: 86400
   is-concurrent: true
   is-share: false
-  token-style: uuid
+  token-style: jwt
+  jwt-secret-key: ${JWT_SECRET:aistudy-jwt-secret-key-2024-please-change-in-production}
   is-log: false
 
 # DeepSeek AI 配置
@@ -44,6 +45,12 @@ ai:
     model: deepseek-chat
     max-retries: 3
     timeout: 60
+
+# GitHub OAuth 配置
+github:
+  client-id: ${GITHUB_CLIENT_ID:your-client-id}
+  client-secret: ${GITHUB_CLIENT_SECRET:your-client-secret}
+  redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/api/v1/auth/github/callback}
 
 # Knife4j API 文档
 springdoc:
