@@ -79,5 +79,6 @@ CREATE TABLE IF NOT EXISTS t_quiz_answer (
     answer_time_seconds INT DEFAULT 0 COMMENT '本题用时(秒)',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_session_id (session_id),
-    INDEX idx_user_id (user_id)
+    INDEX idx_user_id (user_id),
+    INDEX idx_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='答题记录表';

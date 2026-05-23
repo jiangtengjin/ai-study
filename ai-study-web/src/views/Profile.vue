@@ -89,9 +89,42 @@
       <div class="profile-section">
         <div class="profile-section-title">
           <el-icon><TrendCharts /></el-icon> 学习趋势
+          <el-radio-group v-model="selectedDays" @change="fetchTrendData" size="small" style="margin-left: auto;">
+            <el-radio-button :value="7">7天</el-radio-button>
+            <el-radio-button :value="30">30天</el-radio-button>
+            <el-radio-button :value="90">90天</el-radio-button>
+          </el-radio-group>
         </div>
-        <div class="chart-placeholder">
-          <el-empty description="学习趋势图表即将上线" />
+
+        <div v-if="trendLoading" class="chart-placeholder">
+          <el-icon class="is-loading" :size="32"><Loading /></el-icon>
+          <span style="margin-left: 8px; color: var(--text-secondary);">加载中...</span>
+        </div>
+
+        <template v-else-if="trendData.length > 0">
+          <StudyDurationCard :data="trendData" />
+          <el-row :gutter="16">
+            <el-col :xs="24" :sm="24" :md="12">
+              <el-card shadow="hover" style="margin-bottom: 16px;">
+                <template #header>
+                  <div class="chart-header">正确率趋势</div>
+                </template>
+                <AccuracyChart :data="trendData" />
+              </el-card>
+            </el-col>
+            <el-col :xs="24" :sm="24" :md="12">
+              <el-card shadow="hover" style="margin-bottom: 16px;">
+                <template #header>
+                  <div class="chart-header">答题数量趋势</div>
+                </template>
+                <QuestionCountChart :data="trendData" />
+              </el-card>
+            </el-col>
+          </el-row>
+        </template>
+
+        <div v-else class="chart-placeholder">
+          <el-empty description="暂无学习数据，快去答题吧！" />
         </div>
       </div>
     </div>
@@ -101,9 +134,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Sunny, Lightning, Clock, CircleClose, Document, Setting, TrendCharts } from '@element-plus/icons-vue'
+import { Sunny, Lightning, Clock, CircleClose, Document, Setting, TrendCharts, Loading } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { getProfileStats, type ProfileStats } from '@/api/profile'
+import { getTrendStats, type TrendStats } from '@/api/trend'
+import AccuracyChart from '@/components/charts/AccuracyChart.vue'
+import QuestionCountChart from '@/components/charts/QuestionCountChart.vue'
+import StudyDurationCard from '@/components/charts/StudyDurationCard.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -116,6 +153,10 @@ const stats = ref<ProfileStats>({
   streakDays: 0,
   averageScore: 0
 })
+
+const trendData = ref<TrendStats[]>([])
+const trendLoading = ref(false)
+const selectedDays = ref<7 | 30 | 90>(7)
 
 const joinDays = computed(() => {
   if (!userStore.userInfo?.createdAt) return 0
@@ -148,12 +189,30 @@ const weekDays = computed(() => {
   })
 })
 
+const fetchTrendData = async () => {
+  trendLoading.value = true
+  try {
+    const data = await getTrendStats({
+      period: 'day',
+      days: selectedDays.value
+    })
+    console.log('趋势数据:', data)
+    trendData.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('获取趋势数据失败:', error)
+    trendData.value = []
+  } finally {
+    trendLoading.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     stats.value = await getProfileStats()
   } catch (error) {
     console.error('获取统计数据失败:', error)
   }
+  fetchTrendData()
 })
 </script>
 
@@ -361,6 +420,12 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.chart-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 @media (max-width: 768px) {
