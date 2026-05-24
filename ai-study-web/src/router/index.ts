@@ -61,6 +61,18 @@ const router = createRouter({
       component: () => import('@/views/Settings.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/knowledge-base',
+      name: 'KnowledgeBase',
+      component: () => import('@/views/KnowledgeBase.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/knowledge-base/:id',
+      name: 'KnowledgeBaseDetail',
+      component: () => import('@/views/KnowledgeBaseDetail.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 

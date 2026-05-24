@@ -65,6 +65,30 @@ public class AiService {
     }
 
     /**
+     * 生成闯关题目（带 RAG 检索结果上下文）
+     */
+    public Map<String, Object> generateQuestionsWithRag(String content, int count, String difficulty, String ragResults) {
+        String difficultyLabel = switch (difficulty) {
+            case "easy" -> "easy（简单）";
+            case "hard" -> "hard（困难）";
+            case "balanced" -> "balanced（均衡）";
+            default -> "medium（中等）";
+        };
+        String ragSection = ragResults.isBlank() ? "" :
+                "## 知识库检索的相关知识点\n<<<RAG_START>>\n" + ragResults + "\n<<<RAG_END>>\n\n"
+                + "请优先参考上方\"知识库检索的相关知识点\"来出题，确保题目紧扣文档内容。\n"
+                + "如果检索结果为空，请以用户输入的\"知识内容\"为准。\n";
+        String prompt = loadPrompt("prompts/generate-questions.txt")
+                .replace("{content}", content)
+                .replace("{count}", String.valueOf(count))
+                .replace("{difficulty}", difficultyLabel)
+                .replace("{searchSection}", ragSection);
+
+        String responseText = callAiApi(prompt);
+        return parseJsonResponse(responseText);
+    }
+
+    /**
      * 生成学习报告的知识总结
      */
     public Map<String, Object> generateReportSummary(String content, int total, int correct,

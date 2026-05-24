@@ -5,6 +5,7 @@ export interface CreateQuizParams {
   questionCount: number
   difficulty: string
   enableSearch: boolean
+  knowledgeBaseId?: number
 }
 
 export interface CreateQuizResult {

@@ -40,7 +40,8 @@ request.interceptors.response.use(
       ElMessage.warning(hasLoggedIn ? '登录已过期，请重新登录' : '请先登录')
       router.push('/login')
     } else {
-      ElMessage.error(error.message || '网络错误')
+      const serverMessage = error.response?.data?.message
+      ElMessage.error(serverMessage || error.message || '网络错误')
     }
     return Promise.reject(error)
   }

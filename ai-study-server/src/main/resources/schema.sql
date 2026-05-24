@@ -68,6 +68,30 @@ CREATE TABLE IF NOT EXISTS t_question (
     INDEX idx_session_id (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='题目表';
 
+-- 知识库表
+CREATE TABLE IF NOT EXISTS t_knowledge_base (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    name VARCHAR(50) NOT NULL COMMENT '知识库名称',
+    description VARCHAR(200) DEFAULT NULL COMMENT '知识库描述',
+    doc_count INT DEFAULT 0 COMMENT '文档数量',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识库表';
+
+-- 文档表
+CREATE TABLE IF NOT EXISTS t_document (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    knowledge_base_id BIGINT NOT NULL COMMENT '所属知识库ID',
+    file_name VARCHAR(255) NOT NULL COMMENT '文件名',
+    file_size BIGINT DEFAULT 0 COMMENT '文件大小(字节)',
+    file_type VARCHAR(20) DEFAULT NULL COMMENT '文件类型(pdf/docx/txt)',
+    status VARCHAR(20) DEFAULT 'processing' COMMENT '处理状态: processing/completed/failed',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_knowledge_base_id (knowledge_base_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文档表';
+
 -- 答题记录表
 CREATE TABLE IF NOT EXISTS t_quiz_answer (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

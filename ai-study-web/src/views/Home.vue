@@ -20,18 +20,28 @@
           resize="none"
         />
         <div class="input-actions">
-          <el-button text size="small" disabled>
-            <el-icon><Paperclip /></el-icon>
-            上传文档
-          </el-button>
-          <el-button text size="small" disabled>
-            <el-icon><Link /></el-icon>
-            网页链接
-          </el-button>
-          <div class="search-toggle">
+          <el-select
+            v-if="knowledgeBases.length > 0"
+            v-model="selectedKnowledgeBaseId"
+            placeholder="选择知识库（可选）"
+            clearable
+            size="small"
+            style="width: 200px"
+          >
+            <el-option
+              v-for="kb in knowledgeBases"
+              :key="kb.id"
+              :label="kb.name"
+              :value="kb.id"
+            >
+              <span>{{ kb.name }}</span>
+              <span style="float: right; color: #8492a6; font-size: 12px">{{ kb.docCount }} 文档</span>
+            </el-option>
+          </el-select>
+          <div class="search-toggle" :class="{ disabled: selectedKnowledgeBaseId !== null }">
             <el-icon><Search /></el-icon>
             <span>联网搜索</span>
-            <el-switch v-model="enableSearch" size="small" />
+            <el-switch v-model="enableSearch" size="small" :disabled="selectedKnowledgeBaseId !== null" />
           </div>
         </div>
       </div>
@@ -86,10 +96,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { createQuiz } from '@/api/quiz'
+import { listKnowledgeBases, type KnowledgeBaseVO } from '@/api/knowledgeBase'
 
 const router = useRouter()
 const content = ref('')
@@ -98,8 +109,25 @@ const difficulty = ref('balanced')
 const loading = ref(false)
 const inputFocused = ref(false)
 const enableSearch = ref(localStorage.getItem('enableSearch') === 'true')
+const knowledgeBases = ref<KnowledgeBaseVO[]>([])
+const selectedKnowledgeBaseId = ref<number | null>(null)
 
 watch(enableSearch, (val) => localStorage.setItem('enableSearch', String(val)))
+
+// 选择知识库时禁用联网搜索
+watch(selectedKnowledgeBaseId, (val) => {
+  if (val !== null) {
+    enableSearch.value = false
+  }
+})
+
+onMounted(async () => {
+  try {
+    knowledgeBases.value = await listKnowledgeBases()
+  } catch {
+    // 用户未登录或接口异常，忽略
+  }
+})
 
 const countOptions = [5, 10, 15, 20]
 const difficultyOptions = [
@@ -126,6 +154,7 @@ async function handleStart() {
       questionCount: questionCount.value,
       difficulty: difficulty.value,
       enableSearch: enableSearch.value,
+      knowledgeBaseId: selectedKnowledgeBaseId.value || undefined,
     })
     router.push(`/quiz/${res.sessionId}`)
   } catch (e) {
@@ -210,6 +239,12 @@ async function handleStart() {
   gap: 6px;
   font-size: 13px;
   color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.search-toggle.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .config-section {

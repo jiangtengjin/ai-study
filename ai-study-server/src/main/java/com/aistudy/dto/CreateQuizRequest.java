@@ -20,4 +20,7 @@ public class CreateQuizRequest {
     private String difficulty = "balanced";
 
     private boolean enableSearch = false;
+
+    /** 知识库 ID，选择后基于知识库 RAG 出题，与 enableSearch 互斥 */
+    private Long knowledgeBaseId;
 }

@@ -34,6 +34,8 @@ public class QuizService {
 
     private final AiService aiService;
     private final KnowledgeService knowledgeService;
+    private final KnowledgeBaseService knowledgeBaseService;
+    private final KnowledgeBaseVectorStoreService vectorStoreService;
     private final UserService userService;
     private final QuizSessionMapper sessionMapper;
     private final QuestionMapper questionMapper;
@@ -60,23 +62,39 @@ public class QuizService {
 
         // 2. 调用 AI 生成题目
         try {
-            // 如果开启联网搜索，先获取知识
-            String searchResults = "";
-            if (request.isEnableSearch()) {
+            // 知识库 RAG 出题与联网搜索互斥，优先使用知识库
+            Map<String, Object> result;
+            if (request.getKnowledgeBaseId() != null) {
+                // 基于知识库 RAG 出题
+                log.info("使用知识库 {} 进行 RAG 出题...", request.getKnowledgeBaseId());
+                var kb = knowledgeBaseService.getKnowledgeBase(request.getKnowledgeBaseId());
+                if (kb == null) {
+                    throw new BizException(400, "知识库不存在");
+                }
+                if (knowledgeBaseService.getDocCount(request.getKnowledgeBaseId()) == 0) {
+                    throw new BizException(400, "该知识库暂无文档，请先上传文档后再出题");
+                }
+                String ragResults = retrieveFromKnowledgeBase(request.getKnowledgeBaseId(), request.getContent());
+                result = aiService.generateQuestionsWithRag(
+                        request.getContent(), request.getQuestionCount(), request.getDifficulty(), ragResults);
+            } else if (request.isEnableSearch()) {
+                // 联网搜索出题
                 log.info("联网搜索已开启，正在检索知识...");
-                searchResults = knowledgeService.retrieveKnowledge(request.getContent());
+                String searchResults = knowledgeService.retrieveKnowledge(request.getContent());
                 if (!searchResults.isBlank()) {
                     log.info("知识检索成功，结果长度: {}", searchResults.length());
                 } else {
                     log.info("知识检索无结果，使用原始内容出题");
                 }
-            }
-
-            Map<String, Object> result;
-            if (!searchResults.isBlank()) {
-                result = aiService.generateQuestions(
-                        request.getContent(), request.getQuestionCount(), request.getDifficulty(), searchResults);
+                if (!searchResults.isBlank()) {
+                    result = aiService.generateQuestions(
+                            request.getContent(), request.getQuestionCount(), request.getDifficulty(), searchResults);
+                } else {
+                    result = aiService.generateQuestions(
+                            request.getContent(), request.getQuestionCount(), request.getDifficulty());
+                }
             } else {
+                // 普通出题
                 result = aiService.generateQuestions(
                         request.getContent(), request.getQuestionCount(), request.getDifficulty());
             }
@@ -497,6 +515,41 @@ public class QuizService {
                 .optionD(q.getOptionD())
                 .score(q.getScore())
                 .build();
+    }
+
+    /**
+     * 从知识库中检索相关文档片段
+     */
+    private String retrieveFromKnowledgeBase(Long knowledgeBaseId, String query) {
+        try {
+            var results = vectorStoreService.search(knowledgeBaseId, query, 5, 0.4);
+            if (results.isEmpty()) {
+                log.info("知识库 {} 无与查询相关的内容，降级到普通出题", knowledgeBaseId);
+                return "";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            int totalLength = 0;
+            for (var doc : results) {
+                String content = doc.getText();
+                if (totalLength + content.length() > 3000) {
+                    content = content.substring(0, 3000 - totalLength) + "...";
+                }
+                sb.append(content).append("\n\n");
+                totalLength += content.length();
+                if (totalLength >= 3000) break;
+            }
+
+            log.info("从知识库 {} 检索到 {} 个相关片段，总长度: {}", knowledgeBaseId, results.size(), totalLength);
+            // 打印第一个片段的前100字，便于确认检索内容来源
+            if (!results.isEmpty()) {
+                log.info("首个检索片段预览: {}", results.get(0).getText().substring(0, Math.min(100, results.get(0).getText().length())));
+            }
+            return sb.toString().trim();
+        } catch (Exception e) {
+            log.error("知识库检索失败，降级到普通出题: {}", e.getMessage());
+            return "";
+        }
     }
 
     private String getStringValue(Map<String, Object> map, String key, String defaultValue) {
