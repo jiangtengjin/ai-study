@@ -33,6 +33,7 @@ import java.util.Map;
 public class QuizService {
 
     private final AiService aiService;
+    private final KnowledgeService knowledgeService;
     private final UserService userService;
     private final QuizSessionMapper sessionMapper;
     private final QuestionMapper questionMapper;
@@ -59,8 +60,26 @@ public class QuizService {
 
         // 2. 调用 AI 生成题目
         try {
-            Map<String, Object> result = aiService.generateQuestions(
-                    request.getContent(), request.getQuestionCount(), request.getDifficulty());
+            // 如果开启联网搜索，先获取知识
+            String searchResults = "";
+            if (request.isEnableSearch()) {
+                log.info("联网搜索已开启，正在检索知识...");
+                searchResults = knowledgeService.retrieveKnowledge(request.getContent());
+                if (!searchResults.isBlank()) {
+                    log.info("知识检索成功，结果长度: {}", searchResults.length());
+                } else {
+                    log.info("知识检索无结果，使用原始内容出题");
+                }
+            }
+
+            Map<String, Object> result;
+            if (!searchResults.isBlank()) {
+                result = aiService.generateQuestions(
+                        request.getContent(), request.getQuestionCount(), request.getDifficulty(), searchResults);
+            } else {
+                result = aiService.generateQuestions(
+                        request.getContent(), request.getQuestionCount(), request.getDifficulty());
+            }
 
             String title = (String) result.getOrDefault("title", "知识闯关");
             session.setKnowledgeTitle(title);

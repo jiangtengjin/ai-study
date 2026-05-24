@@ -4,6 +4,7 @@ export interface CreateQuizParams {
   content: string
   questionCount: number
   difficulty: string
+  enableSearch: boolean
 }
 
 export interface CreateQuizResult {

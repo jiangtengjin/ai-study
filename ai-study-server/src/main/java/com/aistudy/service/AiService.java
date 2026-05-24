@@ -3,18 +3,19 @@ package com.aistudy.service;
 import com.aistudy.common.result.BizException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,23 +23,15 @@ import java.util.regex.Pattern;
 @Service
 public class AiService {
 
-    @Value("${ai.deepseek.api-key}")
-    private String apiKey;
+    private final ChatClient chatClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${ai.deepseek.base-url}")
-    private String baseUrl;
-
-    @Value("${ai.deepseek.model}")
-    private String model;
-
-    @Value("${ai.deepseek.max-retries}")
+    @Value("${ai.deepseek.max-retries:3}")
     private int maxRetries;
 
-    @Value("${ai.deepseek.timeout}")
-    private int timeout;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    public AiService(ChatModel chatModel) {
+        this.chatClient = ChatClient.builder(chatModel).build();
+    }
 
     /**
      * 生成闯关题目
@@ -53,7 +46,28 @@ public class AiService {
         String prompt = loadPrompt("prompts/generate-questions.txt")
                 .replace("{content}", content)
                 .replace("{count}", String.valueOf(count))
-                .replace("{difficulty}", difficultyLabel);
+                .replace("{difficulty}", difficultyLabel)
+                .replace("{searchResults}", "");
+
+        String responseText = callAiApi(prompt);
+        return parseJsonResponse(responseText);
+    }
+
+    /**
+     * 生成闯关题目（带搜索结果上下文）
+     */
+    public Map<String, Object> generateQuestions(String content, int count, String difficulty, String searchResults) {
+        String difficultyLabel = switch (difficulty) {
+            case "easy" -> "easy（简单）";
+            case "hard" -> "hard（困难）";
+            case "balanced" -> "balanced（均衡）";
+            default -> "medium（中等）";
+        };
+        String prompt = loadPrompt("prompts/generate-questions.txt")
+                .replace("{content}", content)
+                .replace("{count}", String.valueOf(count))
+                .replace("{difficulty}", difficultyLabel)
+                .replace("{searchResults}", searchResults);
 
         String responseText = callAiApi(prompt);
         return parseJsonResponse(responseText);
@@ -78,47 +92,22 @@ public class AiService {
     }
 
     /**
-     * 调用 DeepSeek API（带重试）
+     * 调用 AI API（带重试，通过 Spring AI ChatClient）
      */
     private String callAiApi(String prompt) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + apiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("model", model);
-        body.put("messages", List.of(
-                Map.of("role", "system", "content", "你是一个专业的教育出题专家，只输出JSON格式的内容，不要包含任何其他文字。"),
-                Map.of("role", "user", "content", prompt)
-        ));
-        body.put("temperature", 0.7);
-        body.put("max_tokens", 4096);
-        body.put("response_format", Map.of("type", "json_object"));
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
         Exception lastException = null;
         for (int i = 0; i < maxRetries; i++) {
             try {
-                ResponseEntity<Map> response = restTemplate.exchange(
-                        baseUrl + "/v1/chat/completions",
-                        HttpMethod.POST,
-                        request,
-                        Map.class
-                );
+                String response = chatClient.prompt()
+                        .system("你是一个专业的教育出题专家，只输出JSON格式的内容，不要包含任何其他文字。")
+                        .user(prompt)
+                        .call()
+                        .content();
 
-                Map<String, Object> body2 = response.getBody();
-                if (body2 == null) {
+                if (response == null || response.isBlank()) {
                     throw new BizException(1001, "AI 返回内容为空");
                 }
-
-                List<Map<String, Object>> choices = (List<Map<String, Object>>) body2.get("choices");
-                if (choices == null || choices.isEmpty()) {
-                    throw new BizException(1001, "AI 返回格式异常");
-                }
-
-                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                return (String) message.get("content");
+                return response;
 
             } catch (BizException e) {
                 throw e;

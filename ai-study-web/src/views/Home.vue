@@ -28,10 +28,11 @@
             <el-icon><Link /></el-icon>
             网页链接
           </el-button>
-          <el-button text size="small" disabled>
+          <div class="search-toggle">
             <el-icon><Search /></el-icon>
-            网络搜索
-          </el-button>
+            <span>联网搜索</span>
+            <el-switch v-model="enableSearch" size="small" />
+          </div>
         </div>
       </div>
     </div>
@@ -96,6 +97,7 @@ const questionCount = ref(10)
 const difficulty = ref('balanced')
 const loading = ref(false)
 const inputFocused = ref(false)
+const enableSearch = ref(false)
 
 const countOptions = [5, 10, 15, 20]
 const difficultyOptions = [
@@ -121,6 +123,7 @@ async function handleStart() {
       content: content.value.trim(),
       questionCount: questionCount.value,
       difficulty: difficulty.value,
+      enableSearch: enableSearch.value,
     })
     router.push(`/quiz/${res.sessionId}`)
   } catch (e) {
@@ -197,6 +200,14 @@ async function handleStart() {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+}
+
+.search-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .config-section {

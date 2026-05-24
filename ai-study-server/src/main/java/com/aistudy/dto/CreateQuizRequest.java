@@ -18,4 +18,6 @@ public class CreateQuizRequest {
     private int questionCount = 10;
 
     private String difficulty = "balanced";
+
+    private boolean enableSearch = false;
 }
