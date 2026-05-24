@@ -47,15 +47,6 @@ sa-token:
   jwt-secret-key: ${JWT_SECRET:ZTdlZjY0MWEtOGFiOC00ZDg5LWEzYTktNzE5ZGYxM2I4NzRjLXNhLXRva2VuLWp3dA==}
   is-log: false
 
-# DeepSeek AI 配置（旧配置，保留兼容）
-ai:
-  deepseek:
-    api-key: ${DEEPSEEK_API_KEY:your-api-key-here}
-    base-url: https://api.deepseek.com
-    model: deepseek-chat
-    max-retries: 3
-    timeout: 60
-
 # Tavily 搜索配置
 tavily:
   api-key: ${TAVILY_API_KEY:your-tavily-api-key}

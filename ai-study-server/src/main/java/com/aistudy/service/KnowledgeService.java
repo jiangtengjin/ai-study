@@ -8,11 +8,12 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import jakarta.annotation.PreDestroy;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 @Slf4j
 @Service
@@ -24,9 +25,21 @@ public class KnowledgeService {
     @Value("${tavily.base-url:https://api.tavily.com}")
     private String tavilyBaseUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newFixedThreadPool(4);
+
+    public KnowledgeService() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000);
+        factory.setReadTimeout(5000);
+        this.restTemplate = new RestTemplate(factory);
+    }
+
+    @PreDestroy
+    void shutdown() {
+        executor.shutdown();
+    }
 
     private static final int TIMEOUT_SECONDS = 5;
     private static final int MAX_RESULTS = 5;
@@ -59,7 +72,7 @@ public class KnowledgeService {
      * 判断输入是否包含 URL
      */
     private boolean containsUrl(String input) {
-        return input.contains("http://") || input.contains("https://");
+        return input.matches("(?s).*https?://\\S+.*");
     }
 
     /**

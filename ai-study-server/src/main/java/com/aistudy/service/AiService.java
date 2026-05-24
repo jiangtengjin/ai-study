@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -37,20 +36,7 @@ public class AiService {
      * 生成闯关题目
      */
     public Map<String, Object> generateQuestions(String content, int count, String difficulty) {
-        String difficultyLabel = switch (difficulty) {
-            case "easy" -> "easy（简单）";
-            case "hard" -> "hard（困难）";
-            case "balanced" -> "balanced（均衡）";
-            default -> "medium（中等）";
-        };
-        String prompt = loadPrompt("prompts/generate-questions.txt")
-                .replace("{content}", content)
-                .replace("{count}", String.valueOf(count))
-                .replace("{difficulty}", difficultyLabel)
-                .replace("{searchResults}", "");
-
-        String responseText = callAiApi(prompt);
-        return parseJsonResponse(responseText);
+        return generateQuestions(content, count, difficulty, "");
     }
 
     /**
@@ -63,11 +49,16 @@ public class AiService {
             case "balanced" -> "balanced（均衡）";
             default -> "medium（中等）";
         };
+        String searchSection = searchResults.isBlank() ? "" :
+                "## 联网搜索获取的参考知识\n<<<SEARCH_START>>\n" + searchResults + "\n<<<SEARCH_END>>\n\n"
+                + "如果上方有参考知识，请优先参考其中的事实信息来出题，确保题目准确。\n"
+                + "如果参考知识为空或与主题不相关，请以用户输入的\"知识内容\"为准。\n"
+                + "如果搜索结果与用户输入的主题明显不相关（例如属于不同领域），请忽略搜索结果，以用户输入为准。\n";
         String prompt = loadPrompt("prompts/generate-questions.txt")
                 .replace("{content}", content)
                 .replace("{count}", String.valueOf(count))
                 .replace("{difficulty}", difficultyLabel)
-                .replace("{searchResults}", searchResults);
+                .replace("{searchSection}", searchSection);
 
         String responseText = callAiApi(prompt);
         return parseJsonResponse(responseText);

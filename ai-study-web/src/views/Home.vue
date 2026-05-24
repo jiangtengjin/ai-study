@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { createQuiz } from '@/api/quiz'
@@ -97,7 +97,9 @@ const questionCount = ref(10)
 const difficulty = ref('balanced')
 const loading = ref(false)
 const inputFocused = ref(false)
-const enableSearch = ref(false)
+const enableSearch = ref(localStorage.getItem('enableSearch') === 'true')
+
+watch(enableSearch, (val) => localStorage.setItem('enableSearch', String(val)))
 
 const countOptions = [5, 10, 15, 20]
 const difficultyOptions = [
