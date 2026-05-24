@@ -1,0 +1,70 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev,local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai_study?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: ${DB_PASSWORD:root}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# Sa-Token 配置
+sa-token:
+  token-name: satoken
+  timeout: 604800
+  active-timeout: 86400
+  is-concurrent: true
+  is-share: false
+  token-style: jwt
+  # 生产环境务必通过 JWT_SECRET 环境变量覆盖此值
+  jwt-secret-key: ${JWT_SECRET:ZTdlZjY0MWEtOGFiOC00ZDg5LWEzYTktNzE5ZGYxM2I4NzRjLXNhLXRva2VuLWp3dA==}
+  is-log: false
+
+# DeepSeek AI 配置
+ai:
+  deepseek:
+    api-key: ${DEEPSEEK_API_KEY:your-api-key-here}
+    base-url: https://api.deepseek.com
+    model: deepseek-chat
+    max-retries: 3
+    timeout: 60
+
+# GitHub OAuth 配置
+github:
+  client-id: ${GITHUB_CLIENT_ID:your-client-id}
+  client-secret: ${GITHUB_CLIENT_SECRET:your-client-secret}
+  redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/api/v1/auth/github/callback}
+  frontend-callback-url: ${GITHUB_FRONTEND_CALLBACK:http://localhost:5173/oauth/callback}
+
+# Knife4j API 文档
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: default
+      paths-to-match: /api/**
+
+logging:
+  level:
+    com.aistudy: DEBUG
+    com.aistudy.mapper: DEBUG
