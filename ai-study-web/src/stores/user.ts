@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { getUserInfo, type UserInfo } from '@/api/auth'
-import { setLoggedIn, clearLoggedIn } from '@/api/request'
+import { setLoggedIn, clearLoggedIn, clearToken } from '@/api/request'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref<UserInfo | null>(null)
@@ -33,6 +33,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo.value = null
     isLoggedIn.value = false
     clearLoggedIn()
+    clearToken()
   }
 
   return {

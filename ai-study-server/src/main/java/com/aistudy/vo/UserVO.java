@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Data
 public class UserVO {
 
+    private String token;
+
     private Long id;
 
     private String nickname;

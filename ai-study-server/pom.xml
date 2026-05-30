@@ -76,13 +76,11 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
-        <!-- Spring Boot Data Redis (需要先安装 Redis) -->
-        <!--
+        <!-- Spring Boot Data Redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        -->
 
         <!-- MySQL Driver -->
         <dependency>
@@ -105,10 +103,10 @@
             <version>${sa-token.version}</version>
         </dependency>
 
-        <!-- Sa-Token JWT (token 自包含，无需 Redis，重启不丢失) -->
+        <!-- Sa-Token Redis 集成 (会话持久化到 Redis，重启不丢失) -->
         <dependency>
             <groupId>cn.dev33</groupId>
-            <artifactId>sa-token-jwt</artifactId>
+            <artifactId>sa-token-redis-jackson</artifactId>
             <version>${sa-token.version}</version>
         </dependency>
 

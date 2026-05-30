@@ -13,6 +13,11 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
   ai:
     openai:
       api-key: ${DEEPSEEK_API_KEY:your-api-key-here}
@@ -38,13 +43,12 @@ mybatis-plus:
 # Sa-Token 配置
 sa-token:
   token-name: satoken
-  timeout: 604800
+  timeout: 1209600
   active-timeout: 86400
   is-concurrent: true
   is-share: false
-  token-style: jwt
-  # 生产环境务必通过 JWT_SECRET 环境变量覆盖此值
-  jwt-secret-key: ${JWT_SECRET:ZTdlZjY0MWEtOGFiOC00ZDg5LWEzYTktNzE5ZGYxM2I4NzRjLXNhLXRva2VuLWp3dA==}
+  token-style: uuid
+  is-write-header: true
   is-log: false
 
 # Tavily 搜索配置

@@ -44,6 +44,7 @@ public class AuthController {
         StpUtil.login(user.getId());
 
         UserVO vo = convertToVO(user);
+        vo.setToken(StpUtil.getTokenValue());
         return R.ok(vo);
     }
 
@@ -58,6 +59,7 @@ public class AuthController {
         StpUtil.login(user.getId());
 
         UserVO vo = convertToVO(user);
+        vo.setToken(StpUtil.getTokenValue());
         return R.ok(vo);
     }
 
@@ -92,8 +94,8 @@ public class AuthController {
         // Sa-Token 登录
         StpUtil.login(user.getId());
 
-        // 重定向到前端回调页面
-        response.sendRedirect(frontendCallbackUrl + "?code=success");
+        // 重定向到前端回调页面（token 通过 fragment 传递，不会发送到服务器）
+        response.sendRedirect(frontendCallbackUrl + "?code=success#token=" + StpUtil.getTokenValue());
     }
 
     private void verifyCaptcha(String captcha, HttpSession session) {

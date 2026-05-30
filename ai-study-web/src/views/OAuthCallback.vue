@@ -14,6 +14,7 @@ import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { githubCallback } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
+import { saveToken } from '@/api/request'
 
 const router = useRouter()
 const route = useRoute()
@@ -30,6 +31,15 @@ onMounted(async () => {
 
   // 如果后端已经处理了回调并重定向到这里
   if (code === 'success') {
+    // 保存 token（后端通过 URL fragment 传递，不会发送到服务器）
+    const hash = window.location.hash.substring(1)
+    const params = new URLSearchParams(hash)
+    const token = params.get('token')
+    if (token) {
+      saveToken(token)
+    }
+    // 清除 URL 中的敏感信息
+    router.replace({ query: {}, hash: '' })
     // 获取用户信息
     try {
       await userStore.fetchUserInfo()

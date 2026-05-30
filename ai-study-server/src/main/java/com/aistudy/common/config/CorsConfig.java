@@ -15,6 +15,7 @@ public class CorsConfig {
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.addExposedHeader("satoken");
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
