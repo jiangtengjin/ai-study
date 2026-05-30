@@ -9,6 +9,7 @@ export const useQuizStore = defineStore('quiz', () => {
   const currentIndex = ref(0)
   const answers = ref<Map<number, AnswerResult>>(new Map())
   const streak = ref(0)
+  const totalPoints = ref(0)
   const selectedAnswer = ref<string | null>(null)
   const showFeedback = ref(false)
   const currentResult = ref<AnswerResult | null>(null)
@@ -20,6 +21,7 @@ export const useQuizStore = defineStore('quiz', () => {
     currentIndex.value = 0
     answers.value = new Map()
     streak.value = 0
+    totalPoints.value = 0
     selectedAnswer.value = null
     showFeedback.value = false
     currentResult.value = null
@@ -28,6 +30,7 @@ export const useQuizStore = defineStore('quiz', () => {
   function setAnswer(questionId: number, result: AnswerResult) {
     answers.value.set(questionId, result)
     streak.value = result.streak
+    totalPoints.value += result.points
     currentResult.value = result
     showFeedback.value = true
   }
@@ -46,6 +49,7 @@ export const useQuizStore = defineStore('quiz', () => {
     currentIndex.value = 0
     answers.value = new Map()
     streak.value = 0
+    totalPoints.value = 0
     selectedAnswer.value = null
     showFeedback.value = false
     currentResult.value = null
@@ -53,7 +57,7 @@ export const useQuizStore = defineStore('quiz', () => {
 
   return {
     sessionId, title, questions, currentIndex,
-    answers, streak, selectedAnswer, showFeedback, currentResult,
+    answers, streak, totalPoints, selectedAnswer, showFeedback, currentResult,
     initQuiz, setAnswer, nextQuestion, reset,
   }
 })

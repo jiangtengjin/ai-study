@@ -35,4 +35,9 @@ public class TrendStatsVO {
      * 学习时长（分钟）
      */
     private Integer studyDuration;
+
+    /**
+     * 获得积分
+     */
+    private Integer pointsEarned;
 }

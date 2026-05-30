@@ -20,4 +20,5 @@ public class ReportVO {
     private List<WrongQuestionVO> wrongQuestions;
     private List<String> strengthPoints;
     private List<String> weakPoints;
+    private Integer points;
 }

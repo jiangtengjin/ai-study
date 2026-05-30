@@ -62,6 +62,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/league',
+      name: 'League',
+      component: () => import('@/views/League.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/knowledge-base',
       name: 'KnowledgeBase',
       component: () => import('@/views/KnowledgeBase.vue'),

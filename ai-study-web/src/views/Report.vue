@@ -36,6 +36,10 @@
           <div class="report-stat-value">{{ formatDuration(report.durationSeconds) }}</div>
           <div class="report-stat-label">用时</div>
         </div>
+        <div class="report-stat-card">
+          <div class="report-stat-value">+{{ report.points }}</div>
+          <div class="report-stat-label">获得积分</div>
+        </div>
       </div>
 
       <!-- 评级 -->
@@ -294,9 +298,9 @@ onMounted(async () => {
 
 .report-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  max-width: 560px;
+  max-width: 720px;
   margin: 0 auto 32px;
 }
 
@@ -606,7 +610,7 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .report-page { padding: 32px 20px; }
-  .report-stats { gap: 12px; }
+  .report-stats { gap: 12px; grid-template-columns: repeat(2, 1fr); }
   .report-stat-value { font-size: 24px; }
   .report-actions { flex-direction: column; }
 }

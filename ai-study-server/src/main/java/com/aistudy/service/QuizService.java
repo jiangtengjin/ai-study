@@ -37,6 +37,8 @@ public class QuizService {
     private final KnowledgeBaseService knowledgeBaseService;
     private final KnowledgeBaseVectorStoreService vectorStoreService;
     private final UserService userService;
+    private final ScoreService scoreService;
+    private final PointCalculator pointCalculator;
     private final QuizSessionMapper sessionMapper;
     private final QuestionMapper questionMapper;
     private final QuizAnswerMapper answerMapper;
@@ -284,6 +286,7 @@ public class QuizService {
                         .eq(QuizAnswer::getSessionId, sessionId));
 
         int streak = calculateStreak(sessionId);
+        int points = pointCalculator.calculate(question.getDifficulty(), isCorrect);
 
         return AnswerResultVO.builder()
                 .isCorrect(isCorrect)
@@ -293,6 +296,7 @@ public class QuizService {
                 .currentProgress(answeredCount.intValue())
                 .totalQuestions(session.getQuestionCount())
                 .streak(streak)
+                .points(points)
                 .build();
     }
 
@@ -348,6 +352,12 @@ public class QuizService {
         // 更新用户学习统计
         if (session.getUserId() != null && session.getUserId() > 0) {
             userService.updateStudyStats(session.getUserId(), correctCount, totalQuestions);
+            // 计算积分并双写（累计总积分 + 周积分）
+            try {
+                scoreService.calculateAndSaveSessionPoints(session.getUserId(), sessionId);
+            } catch (Exception e) {
+                log.error("积分计算失败，不影响答题完成: sessionId={}", sessionId, e);
+            }
         }
     }
 

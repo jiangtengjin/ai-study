@@ -36,6 +36,7 @@ export interface AnswerResult {
   currentProgress: number
   totalQuestions: number
   streak: number
+  points: number
 }
 
 export interface WrongQuestionVO {
@@ -75,6 +76,7 @@ export interface ReportVO {
   wrongQuestions: WrongQuestionVO[]
   strengthPoints: string[]
   weakPoints: string[]
+  points: number
 }
 
 // 创建答题会话

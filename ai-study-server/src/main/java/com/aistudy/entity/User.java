@@ -43,6 +43,10 @@ public class User {
 
     private Integer streakDays;
 
+    private Long totalPoints;
+
+    private Long tierId;
+
     private LocalDate lastStudyDate;
 
     private LocalDateTime createdAt;

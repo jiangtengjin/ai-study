@@ -31,6 +31,9 @@
                   <el-dropdown-item @click="router.push('/knowledge-base')">
                     <el-icon><Files /></el-icon> 知识库
                   </el-dropdown-item>
+                  <el-dropdown-item @click="router.push('/league')">
+                    <el-icon><Medal /></el-icon> 段位排行
+                  </el-dropdown-item>
                   <el-dropdown-item divided @click="handleLogout">
                     <el-icon><SwitchButton /></el-icon> 退出登录
                   </el-dropdown-item>
@@ -56,7 +59,7 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Clock, Document, Files, SwitchButton } from '@element-plus/icons-vue'
+import { User, Clock, Document, Files, Medal, SwitchButton } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { logout } from '@/api/auth'
 

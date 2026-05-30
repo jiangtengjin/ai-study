@@ -13,6 +13,10 @@
           <el-icon><Flame /></el-icon>
           <span>连对 {{ quizStore.streak }}</span>
         </div>
+        <div class="quiz-stat points-stat">
+          <el-icon><Coin /></el-icon>
+          <span>{{ quizStore.totalPoints }} 积分</span>
+        </div>
       </div>
     </div>
 
@@ -66,6 +70,7 @@
             <el-icon v-if="quizStore.currentResult.isCorrect"><CircleCheck /></el-icon>
             <el-icon v-else><CircleClose /></el-icon>
             {{ quizStore.currentResult.isCorrect ? '答对了！' : '答错了' }}
+            <span class="feedback-points" v-if="quizStore.currentResult.points">+{{ quizStore.currentResult.points }} 积分</span>
           </div>
           <div class="feedback-text">
             <template v-if="!quizStore.currentResult.isCorrect">
@@ -247,6 +252,11 @@ onMounted(async () => {
   gap: 6px;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.quiz-stat.points-stat {
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .quiz-progress-bar {
@@ -448,6 +458,16 @@ onMounted(async () => {
 
 .feedback-header.wrong {
   color: var(--danger);
+}
+
+.feedback-points {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(108, 92, 231, 0.1);
+  color: var(--primary);
 }
 
 .feedback-text {

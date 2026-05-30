@@ -1,7 +1,9 @@
 package com.aistudy.service;
 
 import com.aistudy.common.result.BizException;
+import com.aistudy.entity.LeagueTier;
 import com.aistudy.entity.User;
+import com.aistudy.mapper.LeagueTierMapper;
 import com.aistudy.mapper.UserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final LeagueTierMapper leagueTierMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
@@ -37,6 +40,8 @@ public class UserService {
         user.setTotalCorrect(0);
         user.setTotalQuestions(0);
         user.setStreakDays(0);
+        user.setTotalPoints(0L);
+        user.setTierId(getDefaultTierId());
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -94,6 +99,8 @@ public class UserService {
         user.setTotalCorrect(0);
         user.setTotalQuestions(0);
         user.setStreakDays(0);
+        user.setTotalPoints(0L);
+        user.setTierId(getDefaultTierId());
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
@@ -163,5 +170,13 @@ public class UserService {
 
         user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
+    }
+
+    private Long getDefaultTierId() {
+        LeagueTier tier = leagueTierMapper.selectOne(
+                new LambdaQueryWrapper<LeagueTier>()
+                        .orderByAsc(LeagueTier::getSortOrder)
+                        .last("LIMIT 1"));
+        return tier != null ? tier.getId() : null;
     }
 }

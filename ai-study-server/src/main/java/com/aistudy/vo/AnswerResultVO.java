@@ -14,4 +14,5 @@ public class AnswerResultVO {
     private Integer currentProgress;
     private Integer totalQuestions;
     private Integer streak;
+    private Integer points;
 }

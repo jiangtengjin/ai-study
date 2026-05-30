@@ -4,9 +4,11 @@ import com.aistudy.common.result.BizException;
 import com.aistudy.entity.Question;
 import com.aistudy.entity.QuizAnswer;
 import com.aistudy.entity.QuizSession;
+import com.aistudy.entity.WeeklyScore;
 import com.aistudy.mapper.QuestionMapper;
 import com.aistudy.mapper.QuizAnswerMapper;
 import com.aistudy.mapper.QuizSessionMapper;
+import com.aistudy.mapper.WeeklyScoreMapper;
 import com.aistudy.vo.ReportVO;
 import com.aistudy.vo.WrongQuestionVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,6 +30,7 @@ public class ReportService {
     private final QuizSessionMapper sessionMapper;
     private final QuestionMapper questionMapper;
     private final QuizAnswerMapper answerMapper;
+    private final WeeklyScoreMapper weeklyScoreMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -87,6 +90,12 @@ public class ReportService {
             }
         }
 
+        // 查询本次会话积分
+        WeeklyScore weeklyScore = weeklyScoreMapper.selectOne(
+                new LambdaQueryWrapper<WeeklyScore>()
+                        .eq(WeeklyScore::getSessionId, sessionId));
+        int sessionPoints = weeklyScore != null ? weeklyScore.getPoints() : 0;
+
         // 计算评级
         String rating = getRating(session.getScore());
 
@@ -144,6 +153,7 @@ public class ReportService {
                 .wrongQuestions(wrongQuestions)
                 .strengthPoints(strengthPoints)
                 .weakPoints(weakPoints)
+                .points(sessionPoints)
                 .build();
     }
 

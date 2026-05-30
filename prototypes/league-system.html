@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 知识闯关 - 联赛系统原型</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --primary-light: #A29BFE;
+            --primary-dark: #5A4BD1;
+            --success: #00B894;
+            --success-light: #E8FFF8;
+            --danger: #FF6B6B;
+            --danger-light: #FFF0F0;
+            --warning: #FDCB6E;
+            --warning-light: #FFF8E1;
+            --bg: #F0F2FF;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D3436;
+            --text-secondary: #636E72;
+            --text-light: #B2BEC3;
+            --border: #E8E8EF;
+            --shadow: 0 4px 20px rgba(108, 92, 231, 0.08);
+            --shadow-hover: 0 8px 30px rgba(108, 92, 231, 0.15);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-lg: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .page-container { max-width: 480px; margin: 0 auto; padding: 20px 16px 100px; }
+
+        .page-header { text-align: center; padding: 20px 0 10px; }
+        .page-header h1 { font-size: 20px; font-weight: 700; }
+        .page-header .subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+        /* Tab Bar */
+        .tab-bar {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 4px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .tab-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+        .tab-item svg { width: 16px; height: 16px; }
+
+        /* Tier Card */
+        .tier-card {
+            background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+            border-radius: var(--radius-lg);
+            padding: 28px 24px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(26, 26, 46, 0.3);
+        }
+        .tier-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(108, 92, 231, 0.15) 0%, transparent 60%);
+            animation: shimmer 8s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10%, 10%); }
+        }
+        .tier-card * { position: relative; z-index: 1; }
+        .tier-icon-wrapper { margin-bottom: 12px; }
+        .tier-icon-svg { width: 80px; height: 80px; }
+        .tier-name { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+        .tier-points { font-size: 14px; opacity: 0.8; margin-bottom: 16px; }
+        .tier-progress-bar {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .tier-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #00D2D3, #6C5CE7);
+            transition: width 1s ease;
+        }
+        .tier-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        .tier-progress-label .tier-mini { display: inline-flex; align-items: center; gap: 4px; }
+        .tier-progress-label .tier-mini svg { width: 14px; height: 14px; }
+
+        /* Sub Tab Bar */
+        .sub-tab-bar {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .sub-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sub-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+        }
+        .sub-tab-content { display: none; }
+        .sub-tab-content.active { display: block; }
+
+        /* Dimension Tabs */
+        .dimension-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .dim-tab {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+        .dim-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);
+        }
+        .dim-content { display: none; }
+        .dim-content.active { display: block; }
+
+        /* User Tier Badge in ranking */
+        .user-tier-badge {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px 12px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .stat-label svg { width: 12px; height: 12px; }
+
+        /* Section Header */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .section-title { font-size: 16px; font-weight: 700; }
+        .section-badge {
+            background: var(--primary);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .section-badge svg { width: 12px; height: 12px; }
+        .section-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+        .section-subtitle svg { width: 14px; height: 14px; color: var(--text-light); }
+
+        /* Ranking List */
+        .ranking-list {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        .ranking-list-header {
+            display: grid;
+            grid-template-columns: 50px 1fr 80px;
+            padding: 12px 16px;
+            background: var(--bg);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .ranking-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 80px;
+            padding: 14px 16px;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .ranking-item:last-child { border-bottom: none; }
+        .ranking-item:hover { background: var(--bg); }
+        .ranking-item.promote-zone { border-left: 3px solid var(--success); }
+        .ranking-item.demote-zone { border-left: 3px solid var(--danger); }
+        .ranking-item.me { background: rgba(108, 92, 231, 0.06); }
+
+        .rank-num { font-size: 16px; font-weight: 800; color: var(--text-secondary); }
+        .rank-num.top-1 { color: #FFD700; }
+        .rank-num.top-2 { color: #C0C0C0; }
+        .rank-num.top-3 { color: #CD7F32; }
+        .rank-medal { display: inline-flex; align-items: center; gap: 2px; }
+        .rank-medal svg { width: 20px; height: 20px; }
+
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 14px; font-weight: 700;
+        }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-points { font-size: 16px; font-weight: 800; color: var(--primary); text-align: right; }
+
+        /* Zone Divider */
+        .zone-divider {
+            display: flex; align-items: center;
+            padding: 8px 16px;
+            font-size: 11px; font-weight: 600; gap: 8px;
+        }
+        .zone-divider.promote { color: var(--success); }
+        .zone-divider.demote { color: var(--danger); }
+        .zone-divider::before, .zone-divider::after {
+            content: ''; flex: 1; height: 1px;
+            background: currentColor; opacity: 0.3;
+        }
+        .zone-divider svg { width: 12px; height: 12px; }
+
+        /* My Position */
+        .my-position {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+        }
+        .my-position-left .label, .my-position-right .label { font-size: 12px; opacity: 0.8; display: flex; align-items: center; gap: 4px; }
+        .my-position-left .label svg, .my-position-right .label svg { width: 12px; height: 12px; }
+        .my-position-left .value { font-size: 20px; font-weight: 800; }
+        .my-position-right { text-align: right; }
+        .my-position-right .value { font-size: 16px; font-weight: 700; }
+
+        /* History List */
+        .history-list { display: flex; flex-direction: column; gap: 12px; }
+        .history-item {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: var(--shadow);
+        }
+        .history-tier-icon {
+            width: 52px; height: 52px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .history-tier-icon svg { width: 36px; height: 36px; }
+        .history-info { flex: 1; }
+        .history-week { font-size: 13px; color: var(--text-secondary); }
+        .history-result { font-size: 14px; font-weight: 600; margin-top: 2px; }
+        .history-stats { text-align: right; }
+        .history-rank { font-size: 18px; font-weight: 800; color: var(--primary); }
+        .history-points { font-size: 12px; color: var(--text-secondary); }
+
+        /* Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; border-radius: 6px;
+            font-size: 12px; font-weight: 600;
+        }
+        .badge svg { width: 12px; height: 12px; }
+        .badge-promote { background: var(--success-light); color: var(--success); }
+        .badge-keep { background: var(--bg); color: var(--text-secondary); }
+        .badge-demote { background: var(--danger-light); color: var(--danger); }
+
+        /* Tier Grid */
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .tier-grid-item {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 20px 12px 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .tier-grid-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        .tier-grid-item:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+        .tier-grid-item.current { border-color: var(--primary); background: rgba(108, 92, 231, 0.05); }
+        .tier-grid-item.locked { opacity: 0.5; filter: grayscale(0.3); }
+        .tier-grid-icon { margin-bottom: 10px; display: flex; justify-content: center; }
+        .tier-grid-icon svg { width: 56px; height: 56px; }
+        .tier-grid-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+        .tier-grid-points { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+        /* Tier-specific top borders */
+        .tier-grid-item[data-tier="bronze"]::before { background: linear-gradient(90deg, #CD7F32, #B8860B); }
+        .tier-grid-item[data-tier="silver"]::before { background: linear-gradient(90deg, #C0C0C0, #A8A8A8); }
+        .tier-grid-item[data-tier="gold"]::before { background: linear-gradient(90deg, #FFD700, #FFA500); }
+        .tier-grid-item[data-tier="sapphire"]::before { background: linear-gradient(90deg, #4FC3F7, #0D47A1); }
+        .tier-grid-item[data-tier="ruby"]::before { background: linear-gradient(90deg, #FF6B6B, #C0392B); }
+        .tier-grid-item[data-tier="amethyst"]::before { background: linear-gradient(90deg, #BB6BD9, #6C3483); }
+        .tier-grid-item[data-tier="pearl"]::before { background: linear-gradient(90deg, #F5F5F5, #D4C5A9); }
+        .tier-grid-item[data-tier="obsidian"]::before { background: linear-gradient(90deg, #2C3E50, #1A1A2E); }
+
+        /* Rule Item */
+        .rule-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+        .rule-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .rule-icon svg { width: 20px; height: 20px; }
+        .rule-icon.green { background: var(--success-light); color: var(--success); }
+        .rule-icon.yellow { background: var(--warning-light); color: #E17055; }
+        .rule-icon.red { background: var(--danger-light); color: var(--danger); }
+        .rule-icon.blue { background: rgba(108,92,231,0.1); color: var(--primary); }
+        .rule-text .rule-title { font-size: 14px; font-weight: 600; }
+        .rule-text .rule-desc { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+        /* Settlement Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            text-align: center;
+            max-width: 360px; width: 100%;
+            animation: modalIn 0.4s ease;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.8) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .modal-icon-wrapper { margin-bottom: 16px; }
+        .modal-icon-wrapper svg { width: 72px; height: 72px; }
+        .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .modal-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+        .modal-tier-change {
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; margin-bottom: 24px;
+        }
+        .modal-tier-from, .modal-tier-to { text-align: center; }
+        .modal-tier-from .tier-icon-modal, .modal-tier-to .tier-icon-modal { margin-bottom: 4px; }
+        .modal-tier-from .tier-icon-modal svg, .modal-tier-to .tier-icon-modal svg { width: 52px; height: 52px; }
+        .modal-tier-from .name, .modal-tier-to .name { font-size: 13px; color: var(--text-secondary); }
+        .modal-arrow { color: var(--primary); }
+        .modal-arrow svg { width: 28px; height: 28px; }
+        .modal-stats {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-bottom: 24px;
+        }
+        .modal-stat-value { font-size: 20px; font-weight: 800; color: var(--primary); }
+        .modal-stat-label { font-size: 11px; color: var(--text-secondary); }
+        .modal-btn {
+            width: 100%; padding: 14px;
+            border: none; border-radius: var(--radius);
+            font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .modal-btn svg { width: 18px; height: 18px; }
+        .modal-btn-primary { background: var(--primary); color: white; }
+        .modal-btn-primary:hover { background: var(--primary-dark); }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--bg-card);
+            display: flex; justify-content: space-around;
+            padding: 12px 0 8px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 3px; font-size: 10px; color: var(--text-light);
+            cursor: pointer; transition: color 0.2s;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item svg { width: 22px; height: 22px; }
+
+        /* Tab Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Badge animations */
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 4px rgba(255,215,0,0.4)); }
+            50% { filter: drop-shadow(0 0 12px rgba(255,215,0,0.8)); }
+        }
+        @keyframes rotate-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .tier-grid-icon .animated-glow { animation: pulse-glow 2s ease-in-out infinite; }
+        .tier-grid-icon .animated-rotate { animation: rotate-slow 20s linear infinite; }
+        .tier-grid-icon .animated-float { animation: float 3s ease-in-out infinite; }
+
+        @media (max-width: 480px) {
+            .page-container { padding: 12px 12px 100px; }
+            .tier-card { padding: 20px 16px; }
+            .tier-icon-svg { width: 64px; height: 64px; }
+            .tier-name { font-size: 20px; }
+            .tier-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .tier-grid-icon svg { width: 48px; height: 48px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>联赛</h1>
+        <div class="subtitle">本周联赛 · 第 12 周</div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+        <div class="tab-item active" onclick="switchTab('ranking', this)"><i data-lucide="trophy"></i> 排名</div>
+        <div class="tab-item" onclick="switchTab('tiers', this)"><i data-lucide="shield"></i> 段位</div>
+        <div class="tab-item" onclick="switchTab('history', this)"><i data-lucide="clock"></i> 历史</div>
+    </div>
+
+    <!-- Tab: Ranking -->
+    <div id="tab-ranking" class="tab-content active">
+        <!-- Sub Tab: Weekly / Total -->
+        <div class="sub-tab-bar">
+            <div class="sub-tab active" onclick="switchSubTab('weekly', this)">周榜</div>
+            <div class="sub-tab" onclick="switchSubTab('total', this)">总榜</div>
+        </div>
+
+        <!-- Weekly Ranking -->
+        <div id="subtab-weekly" class="sub-tab-content active">
+            <!-- Tier Card with Sapphire Badge -->
+            <div class="tier-card">
+            <div class="tier-icon-wrapper">
+                <!-- Sapphire Badge: Octagon cut gem with glow -->
+                <svg class="tier-icon-svg" viewBox="0 0 80 80" fill="none">
+                    <defs>
+                        <linearGradient id="sapphire-main" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#81D4FA"/>
+                            <stop offset="30%" style="stop-color:#4FC3F7"/>
+                            <stop offset="60%" style="stop-color:#0288D1"/>
+                            <stop offset="100%" style="stop-color:#01579B"/>
+                        </linearGradient>
+                        <linearGradient id="sapphire-highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:white;stop-opacity:0.6"/>
+                            <stop offset="100%" style="stop-color:white;stop-opacity:0"/>
+                        </linearGradient>
+                        <filter id="sapphire-glow">
+                            <feGaussianBlur stdDeviation="3" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                        <radialGradient id="sapphire-shine" cx="35%" cy="35%" r="50%">
+                            <stop offset="0%" style="stop-color:white;stop-opacity:0.5"/>
+                            <stop offset="100%" style="stop-color:white;stop-opacity:0"/>
+                        </radialGradient>
+                    </defs>
+                    <!-- Outer glow -->
+                    <polygon points="40,6 62,18 74,40 62,62 40,74 18,62 6,40 18,18" fill="#4FC3F7" opacity="0.3" filter="url(#sapphire-glow)"/>
+                    <!-- Main gem shape (octagon) -->
+                    <polygon points="40,8 60,20 72,40 60,60 40,72 20,60 8,40 20,20" fill="url(#sapphire-main)"/>
+                    <!-- Facet lines -->
+                    <polygon points="40,8 40,40 60,20" fill="rgba(255,255,255,0.15)"/>
+                    <polygon points="40,8 40,40 20,20" fill="rgba(0,0,0,0.1)"/>
+                    <polygon points="72,40 40,40 60,20" fill="rgba(255,255,255,0.1)"/>
+                    <polygon points="72,40 40,40 60,60" fill="rgba(0,0,0,0.15)"/>
+                    <polygon points="40,72 40,40 60,60" fill="rgba(255,255,255,0.05)"/>
+                    <polygon points="40,72 40,40 20,60" fill="rgba(0,0,0,0.2)"/>
+                    <polygon points="8,40 40,40 20,60" fill="rgba(255,255,255,0.1)"/>
+                    <polygon points="8,40 40,40 20,20" fill="rgba(0,0,0,0.1)"/>
+                    <!-- Shine highlight -->
+                    <ellipse cx="32" cy="28" rx="12" ry="8" fill="url(#sapphire-shine)" transform="rotate(-20 32 28)"/>
+                    <!-- Small decorative stars -->
+                    <circle cx="15" cy="12" r="1.5" fill="white" opacity="0.6"/>
+                    <circle cx="65" cy="15" r="1" fill="white" opacity="0.4"/>
+                    <circle cx="70" cy="55" r="1.5" fill="white" opacity="0.5"/>
+                </svg>
+            </div>
+            <div class="tier-name">蓝宝石</div>
+            <div class="tier-points">累计积分 15,280</div>
+            <div class="tier-progress-bar">
+                <div class="tier-progress-fill" style="width: 27%"></div>
+            </div>
+            <div class="tier-progress-label">
+                <span class="tier-mini">蓝宝石</span>
+                <span class="tier-mini">红宝石 · 还需 9,720</span>
+            </div>
+        </div>
+
+        <!-- My Position -->
+        <div class="my-position">
+            <div class="my-position-left">
+                <div class="label"><i data-lucide="hash"></i> 我的排名</div>
+                <div class="value">第 11 名</div>
+            </div>
+            <div class="my-position-right">
+                <div class="label"><i data-lucide="target"></i> 距晋级线</div>
+                <div class="value">差 23 分</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value">892</div>
+                <div class="stat-label"><i data-lucide="zap"></i> 本周积分</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">42</div>
+                <div class="stat-label"><i data-lucide="check-circle"></i> 答对题数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">87%</div>
+                <div class="stat-label"><i data-lucide="percent"></i> 正确率</div>
+            </div>
+        </div>
+
+        <!-- Ranking List -->
+        <div class="section-header">
+            <div class="section-title">蓝宝石联赛 · 第2847组</div>
+            <div class="section-badge"><i data-lucide="users"></i> 30人</div>
+        </div>
+        <div class="section-subtitle"><i data-lucide="info"></i> Top 10 晋级 · Bottom 5 降级</div>
+
+        <div class="ranking-list">
+            <div class="ranking-list-header">
+                <span>排名</span>
+                <span>用户</span>
+                <span style="text-align:right">积分</span>
+            </div>
+
+            <div class="ranking-item promote-zone">
+                <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#FFD700" stroke="#DAA520" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/><circle cx="12" cy="10" r="2" fill="#FFF8E1" opacity="0.6"/></svg></span></span>
+                <div class="user-info">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #FFD700, #FFA500);">王</div>
+                    <span class="user-name">学霸王者</span>
+                </div>
+                <span class="user-points">1,285</span>
+            </div>
+            <div class="ranking-item promote-zone">
+                <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#C0C0C0" stroke="#A0A0A0" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/><circle cx="12" cy="10" r="2" fill="white" opacity="0.5"/></svg></span></span>
+                <div class="user-info">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0);">李</div>
+                    <span class="user-name">知识猎手</span>
+                </div>
+                <span class="user-points">1,156</span>
+            </div>
+            <div class="ranking-item promote-zone">
+                <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#CD7F32" stroke="#B8860B" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/><circle cx="12" cy="10" r="2" fill="#FFE0B2" opacity="0.5"/></svg></span></span>
+                <div class="user-info">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #CD7F32, #B8860B);">张</div>
+                    <span class="user-name">答题机器</span>
+                </div>
+                <span class="user-points">1,042</span>
+            </div>
+            <div class="ranking-item promote-zone">
+                <span class="rank-num">4</span>
+                <div class="user-info">
+                    <div class="user-avatar">陈</div>
+                    <span class="user-name">学海无涯</span>
+                </div>
+                <span class="user-points">987</span>
+            </div>
+            <div class="ranking-item promote-zone">
+                <span class="rank-num">5</span>
+                <div class="user-info">
+                    <div class="user-avatar">刘</div>
+                    <span class="user-name">每日一题</span>
+                </div>
+                <span class="user-points">945</span>
+            </div>
+
+            <div class="zone-divider promote"><i data-lucide="chevrons-up"></i> 晋级线 <i data-lucide="chevrons-up"></i></div>
+
+            <div class="ranking-item me">
+                <span class="rank-num">11</span>
+                <div class="user-info">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">我</div>
+                    <span class="user-name">我</span>
+                </div>
+                <span class="user-points">789</span>
+            </div>
+
+            <div class="zone-divider demote"><i data-lucide="chevrons-down"></i> 降级线 <i data-lucide="chevrons-down"></i></div>
+
+            <div class="ranking-item demote-zone">
+                <span class="rank-num">28</span>
+                <div class="user-info">
+                    <div class="user-avatar" style="opacity:0.6">徐</div>
+                    <span class="user-name">潜水党</span>
+                </div>
+                <span class="user-points">45</span>
+            </div>
+            <div class="ranking-item demote-zone">
+                <span class="rank-num">30</span>
+                <div class="user-info">
+                    <div class="user-avatar" style="opacity:0.4">高</div>
+                    <span class="user-name" style="opacity:0.6">失踪人口</span>
+                </div>
+                <span class="user-points">0</span>
+            </div>
+        </div>
+        </div><!-- End weekly subtab -->
+
+        <!-- Total Ranking -->
+        <div id="subtab-total" class="sub-tab-content">
+            <!-- My Total Stats Card -->
+            <div class="tier-card" style="background: linear-gradient(135deg, #0F3460 0%, #16213E 50%, #1A1A2E 100%);">
+                <div class="tier-icon-wrapper">
+                    <!-- Current tier badge -->
+                    <svg class="tier-icon-svg" viewBox="0 0 80 80" fill="none">
+                        <defs>
+                            <linearGradient id="sapphire-main2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#81D4FA"/>
+                                <stop offset="30%" style="stop-color:#4FC3F7"/>
+                                <stop offset="60%" style="stop-color:#0288D1"/>
+                                <stop offset="100%" style="stop-color:#01579B"/>
+                            </linearGradient>
+                        </defs>
+                        <polygon points="40,6 62,18 74,40 62,62 40,74 18,62 6,40 18,18" fill="#4FC3F7" opacity="0.3"/>
+                        <polygon points="40,8 60,20 72,40 60,60 40,72 20,60 8,40 20,20" fill="url(#sapphire-main2)"/>
+                        <polygon points="40,8 40,40 60,20" fill="rgba(255,255,255,0.15)"/>
+                        <polygon points="40,8 40,40 20,20" fill="rgba(0,0,0,0.1)"/>
+                        <polygon points="72,40 40,40 60,20" fill="rgba(255,255,255,0.1)"/>
+                        <polygon points="72,40 40,40 60,60" fill="rgba(0,0,0,0.15)"/>
+                        <ellipse cx="32" cy="28" rx="12" ry="8" fill="white" opacity="0.2" transform="rotate(-20 32 28)"/>
+                    </svg>
+                </div>
+                <div class="tier-name">蓝宝石</div>
+                <div class="tier-points">累计积分 15,280 · 全站排名 #1,247</div>
+            </div>
+
+            <!-- Total Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value">1,523</div>
+                    <div class="stat-label"><i data-lucide="book-open"></i> 总答题数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">82%</div>
+                    <div class="stat-label"><i data-lucide="target"></i> 总正确率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">48h</div>
+                    <div class="stat-label"><i data-lucide="clock"></i> 总学习时长</div>
+                </div>
+            </div>
+
+            <!-- Ranking Dimension Tabs -->
+            <div class="dimension-tabs">
+                <div class="dim-tab active" onclick="switchDimension('points', this)">总积分</div>
+                <div class="dim-tab" onclick="switchDimension('questions', this)">答题数</div>
+                <div class="dim-tab" onclick="switchDimension('accuracy', this)">正确率</div>
+                <div class="dim-tab" onclick="switchDimension('duration', this)">学习时长</div>
+            </div>
+
+            <!-- Total Points Ranking -->
+            <div id="dim-points" class="dim-content active">
+                <div class="section-header">
+                    <div class="section-title">总积分排行榜</div>
+                    <div class="section-badge"><i data-lucide="users"></i> 全站</div>
+                </div>
+
+                <div class="ranking-list">
+                    <div class="ranking-list-header">
+                        <span>排名</span>
+                        <span>用户</span>
+                        <span style="text-align:right">积分</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#FFD700" stroke="#DAA520" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/><circle cx="12" cy="10" r="2" fill="#FFF8E1" opacity="0.6"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #FFD700, #FFA500);">王</div>
+                            <div>
+                                <span class="user-name">学霸王者</span>
+                                <div class="user-tier-badge"><svg viewBox="0 0 16 16" fill="none" width="12" height="12"><polygon points="8,1 13,5 15,8 13,11 8,15 3,11 1,8 3,5" fill="#000"/></svg> 黑曜石</div>
+                            </div>
+                        </div>
+                        <span class="user-points">285,420</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#C0C0C0" stroke="#A0A0A0" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/><circle cx="12" cy="10" r="2" fill="white" opacity="0.5"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0);">李</div>
+                            <div>
+                                <span class="user-name">知识猎手</span>
+                                <div class="user-tier-badge"><svg viewBox="0 0 16 16" fill="none" width="12" height="12"><circle cx="8" cy="8" r="6" fill="#F5F5F5" stroke="#D4C5A9" stroke-width="1"/></svg> 珍珠</div>
+                            </div>
+                        </div>
+                        <span class="user-points">198,750</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#CD7F32" stroke="#B8860B" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/><circle cx="12" cy="10" r="2" fill="#FFE0B2" opacity="0.5"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #CD7F32, #B8860B);">张</div>
+                            <div>
+                                <span class="user-name">答题机器</span>
+                                <div class="user-tier-badge"><svg viewBox="0 0 16 16" fill="none" width="12" height="12"><polygon points="8,1 13,5 15,8 13,11 8,15 3,11 1,8 3,5" fill="#9C27B0"/></svg> 紫水晶</div>
+                            </div>
+                        </div>
+                        <span class="user-points">156,320</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num">4</span>
+                        <div class="user-info">
+                            <div class="user-avatar">陈</div>
+                            <div>
+                                <span class="user-name">学海无涯</span>
+                                <div class="user-tier-badge"><svg viewBox="0 0 16 16" fill="none" width="12" height="12"><polygon points="8,1 13,5 15,8 13,11 8,15 3,11 1,8 3,5" fill="#E53935"/></svg> 红宝石</div>
+                            </div>
+                        </div>
+                        <span class="user-points">132,180</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num">5</span>
+                        <div class="user-info">
+                            <div class="user-avatar">刘</div>
+                            <div>
+                                <span class="user-name">每日一题</span>
+                                <div class="user-tier-badge"><svg viewBox="0 0 16 16" fill="none" width="12" height="12"><polygon points="8,1 13,5 15,8 13,11 8,15 3,11 1,8 3,5" fill="#E53935"/></svg> 红宝石</div>
+                            </div>
+                        </div>
+                        <span class="user-points">128,900</span>
+                    </div>
+
+                    <!-- My position -->
+                    <div class="zone-divider" style="color: var(--primary);"><i data-lucide="user"></i> 我的排名 <i data-lucide="user"></i></div>
+                    <div class="ranking-item me">
+                        <span class="rank-num">1,247</span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">我</div>
+                            <div>
+                                <span class="user-name">我</span>
+                                <div class="user-tier-badge"><svg viewBox="0 0 16 16" fill="none" width="12" height="12"><polygon points="8,1 13,5 15,8 13,11 8,15 3,11 1,8 3,5" fill="#0288D1"/></svg> 蓝宝石</div>
+                            </div>
+                        </div>
+                        <span class="user-points">15,280</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Ranking -->
+            <div id="dim-questions" class="dim-content">
+                <div class="section-header">
+                    <div class="section-title">答题数排行榜</div>
+                    <div class="section-badge"><i data-lucide="users"></i> 全站</div>
+                </div>
+                <div class="ranking-list">
+                    <div class="ranking-list-header">
+                        <span>排名</span>
+                        <span>用户</span>
+                        <span style="text-align:right">答题数</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#FFD700" stroke="#DAA520" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #CD7F32, #B8860B);">张</div>
+                            <span class="user-name">答题机器</span>
+                        </div>
+                        <span class="user-points">8,542</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#C0C0C0" stroke="#A0A0A0" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #FFD700, #FFA500);">王</div>
+                            <span class="user-name">学霸王者</span>
+                        </div>
+                        <span class="user-points">7,823</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#CD7F32" stroke="#B8860B" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar">刘</div>
+                            <span class="user-name">每日一题</span>
+                        </div>
+                        <span class="user-points">6,234</span>
+                    </div>
+                    <div class="zone-divider" style="color: var(--primary);"><i data-lucide="user"></i> 我的排名 <i data-lucide="user"></i></div>
+                    <div class="ranking-item me">
+                        <span class="rank-num">892</span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">我</div>
+                            <span class="user-name">我</span>
+                        </div>
+                        <span class="user-points">1,523</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accuracy Ranking -->
+            <div id="dim-accuracy" class="dim-content">
+                <div class="section-header">
+                    <div class="section-title">正确率排行榜</div>
+                    <div class="section-badge"><i data-lucide="users"></i> 全站</div>
+                </div>
+                <div class="section-subtitle"><i data-lucide="info"></i> 仅统计答题数 ≥ 100 的用户</div>
+                <div class="ranking-list">
+                    <div class="ranking-list-header">
+                        <span>排名</span>
+                        <span>用户</span>
+                        <span style="text-align:right">正确率</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#FFD700" stroke="#DAA520" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0);">李</div>
+                            <span class="user-name">知识猎手</span>
+                        </div>
+                        <span class="user-points">96.8%</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#C0C0C0" stroke="#A0A0A0" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #FFD700, #FFA500);">王</div>
+                            <span class="user-name">学霸王者</span>
+                        </div>
+                        <span class="user-points">94.2%</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#CD7F32" stroke="#B8860B" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar">陈</div>
+                            <span class="user-name">学海无涯</span>
+                        </div>
+                        <span class="user-points">91.5%</span>
+                    </div>
+                    <div class="zone-divider" style="color: var(--primary);"><i data-lucide="user"></i> 我的排名 <i data-lucide="user"></i></div>
+                    <div class="ranking-item me">
+                        <span class="rank-num">456</span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">我</div>
+                            <span class="user-name">我</span>
+                        </div>
+                        <span class="user-points">82.3%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duration Ranking -->
+            <div id="dim-duration" class="dim-content">
+                <div class="section-header">
+                    <div class="section-title">学习时长排行榜</div>
+                    <div class="section-badge"><i data-lucide="users"></i> 全站</div>
+                </div>
+                <div class="ranking-list">
+                    <div class="ranking-list-header">
+                        <span>排名</span>
+                        <span>用户</span>
+                        <span style="text-align:right">学习时长</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#FFD700" stroke="#DAA520" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #FFD700, #FFA500);">王</div>
+                            <span class="user-name">学霸王者</span>
+                        </div>
+                        <span class="user-points">326h</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#C0C0C0" stroke="#A0A0A0" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar">陈</div>
+                            <span class="user-name">学海无涯</span>
+                        </div>
+                        <span class="user-points">284h</span>
+                    </div>
+                    <div class="ranking-item">
+                        <span class="rank-num"><span class="rank-medal"><svg viewBox="0 0 24 24" fill="#CD7F32" stroke="#B8860B" stroke-width="0.5"><polygon points="12,1 14.5,8 22,8.5 16.5,13 18.5,20.5 12,16.5 5.5,20.5 7.5,13 2,8.5 9.5,8"/></svg></span></span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0);">李</div>
+                            <span class="user-name">知识猎手</span>
+                        </div>
+                        <span class="user-points">256h</span>
+                    </div>
+                    <div class="zone-divider" style="color: var(--primary);"><i data-lucide="user"></i> 我的排名 <i data-lucide="user"></i></div>
+                    <div class="ranking-item me">
+                        <span class="rank-num">1,089</span>
+                        <div class="user-info">
+                            <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">我</div>
+                            <span class="user-name">我</span>
+                        </div>
+                        <span class="user-points">48h</span>
+                    </div>
+                </div>
+            </div>
+        </div><!-- End total subtab -->
+    </div><!-- End ranking tab -->
+
+    <!-- Tab: Tiers -->
+    <div id="tab-tiers" class="tab-content">
+        <div class="section-header">
+            <div class="section-title">段位体系</div>
+        </div>
+        <div class="section-subtitle"><i data-lucide="shield-check"></i> 累计积分决定段位，只升不降</div>
+
+        <div class="tier-grid">
+            <!-- 1. Bronze - Simple shield -->
+            <div class="tier-grid-item locked" data-tier="bronze">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <linearGradient id="bronze-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#D4A574"/>
+                                <stop offset="50%" style="stop-color:#CD7F32"/>
+                                <stop offset="100%" style="stop-color:#8B5E3C"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Shield shape -->
+                        <path d="M28 4 L48 14 L48 30 C48 42 38 50 28 54 C18 50 8 42 8 30 L8 14 Z" fill="url(#bronze-grad)" stroke="#8B5E3C" stroke-width="1.5"/>
+                        <!-- Shield border -->
+                        <path d="M28 8 L44 16 L44 30 C44 40 36 47 28 50 C20 47 12 40 12 30 L12 16 Z" fill="none" stroke="#D4A574" stroke-width="1" opacity="0.6"/>
+                        <!-- Simple star -->
+                        <polygon points="28,18 31,26 40,26 33,31 35,39 28,34 21,39 23,31 16,26 25,26" fill="#FFE0B2" opacity="0.8"/>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">铜牌</div>
+                <div class="tier-grid-points">0 积分</div>
+            </div>
+
+            <!-- 2. Silver - Shield with wing decorations -->
+            <div class="tier-grid-item locked" data-tier="silver">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <linearGradient id="silver-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#E8E8E8"/>
+                                <stop offset="50%" style="stop-color:#C0C0C0"/>
+                                <stop offset="100%" style="stop-color:#A0A0A0"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Wing left -->
+                        <path d="M10 28 C10 28 14 20 20 22 C16 24 14 28 14 28" fill="#D0D0D0" opacity="0.7"/>
+                        <path d="M8 32 C8 32 12 22 20 24 C14 26 12 32 12 32" fill="#B8B8B8" opacity="0.6"/>
+                        <!-- Wing right -->
+                        <path d="M46 28 C46 28 42 20 36 22 C40 24 42 28 42 28" fill="#D0D0D0" opacity="0.7"/>
+                        <path d="M48 32 C48 32 44 22 36 24 C42 26 44 32 44 32" fill="#B8B8B8" opacity="0.6"/>
+                        <!-- Shield -->
+                        <path d="M28 6 L46 16 L46 30 C46 42 36 48 28 52 C20 48 10 42 10 30 L10 16 Z" fill="url(#silver-grad)" stroke="#909090" stroke-width="1.5"/>
+                        <!-- Inner shield -->
+                        <path d="M28 10 L42 18 L42 30 C42 40 34 45 28 48 C22 45 14 40 14 30 L14 18 Z" fill="none" stroke="#E0E0E0" stroke-width="1" opacity="0.5"/>
+                        <!-- Star -->
+                        <polygon points="28,20 31,27 38,27 32,32 34,39 28,35 22,39 24,32 18,27 25,27" fill="white" opacity="0.9"/>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">银牌</div>
+                <div class="tier-grid-points">2,000 积分</div>
+            </div>
+
+            <!-- 3. Gold - Shield with wings and rays -->
+            <div class="tier-grid-item locked" data-tier="gold">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FFE082"/>
+                                <stop offset="40%" style="stop-color:#FFD700"/>
+                                <stop offset="100%" style="stop-color:#FFA000"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Rays behind -->
+                        <line x1="28" y1="2" x2="28" y2="10" stroke="#FFD700" stroke-width="1.5" opacity="0.5"/>
+                        <line x1="10" y1="10" x2="16" y2="16" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                        <line x1="46" y1="10" x2="40" y2="16" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                        <line x1="4" y1="28" x2="12" y2="28" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>
+                        <line x1="52" y1="28" x2="44" y2="28" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>
+                        <!-- Wings -->
+                        <path d="M8 26 C8 26 14 16 22 18 C16 20 12 26 12 26" fill="#FFE082" opacity="0.8"/>
+                        <path d="M6 30 C6 30 12 18 22 20 C14 22 10 30 10 30" fill="#FFD700" opacity="0.7"/>
+                        <path d="M48 26 C48 26 42 16 34 18 C40 20 44 26 44 26" fill="#FFE082" opacity="0.8"/>
+                        <path d="M50 30 C50 30 44 18 34 20 C42 22 46 30 46 30" fill="#FFD700" opacity="0.7"/>
+                        <!-- Shield -->
+                        <path d="M28 8 L46 18 L46 32 C46 42 36 48 28 52 C20 48 10 42 10 32 L10 18 Z" fill="url(#gold-grad)" stroke="#E6A800" stroke-width="1.5"/>
+                        <!-- Inner shield -->
+                        <path d="M28 12 L42 20 L42 32 C42 40 34 45 28 48 C22 45 14 40 14 32 L14 20 Z" fill="none" stroke="#FFF8E1" stroke-width="1" opacity="0.5"/>
+                        <!-- Crown symbol -->
+                        <path d="M20 28 L24 22 L28 26 L32 22 L36 28 L34 34 L22 34 Z" fill="#FFF8E1" opacity="0.9"/>
+                        <circle cx="24" cy="24" r="1.5" fill="#FFA000"/>
+                        <circle cx="28" cy="22" r="1.5" fill="#FFA000"/>
+                        <circle cx="32" cy="24" r="1.5" fill="#FFA000"/>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">金牌</div>
+                <div class="tier-grid-points">5,000 积分</div>
+            </div>
+
+            <!-- 4. Sapphire - Gem with facets and glow -->
+            <div class="tier-grid-item current" data-tier="sapphire">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <linearGradient id="sapphire-grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#81D4FA"/>
+                                <stop offset="50%" style="stop-color:#0288D1"/>
+                                <stop offset="100%" style="stop-color:#01579B"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Outer glow -->
+                        <polygon points="28,4 48,16 52,28 48,40 28,52 8,40 4,28 8,16" fill="#4FC3F7" opacity="0.2"/>
+                        <!-- Main gem -->
+                        <polygon points="28,6 46,16 50,28 46,40 28,50 10,40 6,28 10,16" fill="url(#sapphire-grad2)"/>
+                        <!-- Facets -->
+                        <polygon points="28,6 28,28 46,16" fill="rgba(255,255,255,0.2)"/>
+                        <polygon points="28,6 28,28 10,16" fill="rgba(0,0,0,0.1)"/>
+                        <polygon points="50,28 28,28 46,16" fill="rgba(255,255,255,0.15)"/>
+                        <polygon points="50,28 28,28 46,40" fill="rgba(0,0,0,0.15)"/>
+                        <polygon points="28,50 28,28 46,40" fill="rgba(255,255,255,0.05)"/>
+                        <polygon points="28,50 28,28 10,40" fill="rgba(0,0,0,0.2)"/>
+                        <polygon points="6,28 28,28 10,40" fill="rgba(255,255,255,0.1)"/>
+                        <polygon points="6,28 28,28 10,16" fill="rgba(0,0,0,0.1)"/>
+                        <!-- Shine -->
+                        <ellipse cx="22" cy="20" rx="8" ry="5" fill="white" opacity="0.3" transform="rotate(-20 22 20)"/>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">蓝宝石</div>
+                <div class="tier-grid-points">12,000 积分</div>
+            </div>
+
+            <!-- 5. Ruby - Gem with fire effect -->
+            <div class="tier-grid-item" data-tier="ruby">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <linearGradient id="ruby-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF8A80"/>
+                                <stop offset="40%" style="stop-color:#E53935"/>
+                                <stop offset="100%" style="stop-color:#B71C1C"/>
+                            </linearGradient>
+                            <radialGradient id="ruby-glow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#FF5252;stop-opacity:0.4"/>
+                                <stop offset="100%" style="stop-color:#FF5252;stop-opacity:0"/>
+                            </radialGradient>
+                        </defs>
+                        <!-- Glow effect -->
+                        <circle cx="28" cy="28" r="24" fill="url(#ruby-glow)"/>
+                        <!-- Fire particles -->
+                        <path d="M18 10 C18 10 20 6 22 10 C22 10 24 6 24 10" fill="#FF8A80" opacity="0.6"/>
+                        <path d="M32 8 C32 8 34 4 36 8 C36 8 38 4 38 8" fill="#FFAB91" opacity="0.5"/>
+                        <path d="M42 14 C42 14 44 10 46 14" fill="#FF8A80" opacity="0.4"/>
+                        <!-- Main gem -->
+                        <polygon points="28,6 46,16 50,28 46,40 28,50 10,40 6,28 10,16" fill="url(#ruby-grad)"/>
+                        <!-- Facets -->
+                        <polygon points="28,6 28,28 46,16" fill="rgba(255,255,255,0.2)"/>
+                        <polygon points="28,6 28,28 10,16" fill="rgba(0,0,0,0.1)"/>
+                        <polygon points="50,28 28,28 46,16" fill="rgba(255,255,255,0.15)"/>
+                        <polygon points="50,28 28,28 46,40" fill="rgba(0,0,0,0.2)"/>
+                        <polygon points="28,50 28,28 46,40" fill="rgba(255,255,255,0.05)"/>
+                        <polygon points="28,50 28,28 10,40" fill="rgba(0,0,0,0.25)"/>
+                        <!-- Inner star -->
+                        <polygon points="28,16 30,24 38,24 32,28 34,36 28,32 22,36 24,28 18,24 26,24" fill="white" opacity="0.15"/>
+                        <!-- Shine -->
+                        <ellipse cx="22" cy="20" rx="8" ry="5" fill="white" opacity="0.35" transform="rotate(-20 22 20)"/>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">红宝石</div>
+                <div class="tier-grid-points">25,000 积分</div>
+            </div>
+
+            <!-- 6. Amethyst - Crystal with mystical glow -->
+            <div class="tier-grid-item" data-tier="amethyst">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <linearGradient id="amethyst-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#CE93D8"/>
+                                <stop offset="40%" style="stop-color:#9C27B0"/>
+                                <stop offset="100%" style="stop-color:#6A1B9A"/>
+                            </linearGradient>
+                            <radialGradient id="amethyst-glow" cx="50%" cy="40%" r="50%">
+                                <stop offset="0%" style="stop-color:#E1BEE7;stop-opacity:0.6"/>
+                                <stop offset="100%" style="stop-color:#E1BEE7;stop-opacity:0"/>
+                            </radialGradient>
+                        </defs>
+                        <!-- Mystical glow -->
+                        <circle cx="28" cy="24" r="22" fill="url(#amethyst-glow)"/>
+                        <!-- Floating particles -->
+                        <circle cx="14" cy="12" r="1.5" fill="#CE93D8" opacity="0.6"/>
+                        <circle cx="42" cy="10" r="1" fill="#E1BEE7" opacity="0.5"/>
+                        <circle cx="48" cy="20" r="1.5" fill="#CE93D8" opacity="0.4"/>
+                        <circle cx="10" cy="22" r="1" fill="#BA68C8" opacity="0.5"/>
+                        <!-- Crystal shape (elongated hexagon) -->
+                        <polygon points="28,2 44,14 44,38 28,50 12,38 12,14" fill="url(#amethyst-grad)"/>
+                        <!-- Crystal facets -->
+                        <polygon points="28,2 28,26 44,14" fill="rgba(255,255,255,0.25)"/>
+                        <polygon points="28,2 28,26 12,14" fill="rgba(0,0,0,0.1)"/>
+                        <polygon points="44,38 28,26 44,14" fill="rgba(255,255,255,0.1)"/>
+                        <polygon points="44,38 28,26 28,50" fill="rgba(0,0,0,0.2)"/>
+                        <polygon points="12,38 28,26 28,50" fill="rgba(255,255,255,0.05)"/>
+                        <polygon points="12,38 28,26 12,14" fill="rgba(0,0,0,0.15)"/>
+                        <!-- Inner crystal formation -->
+                        <polygon points="28,12 36,20 36,34 28,42 20,34 20,20" fill="none" stroke="white" stroke-width="0.5" opacity="0.3"/>
+                        <!-- Shine -->
+                        <ellipse cx="22" cy="18" rx="6" ry="10" fill="white" opacity="0.3" transform="rotate(-10 22 18)"/>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">紫水晶</div>
+                <div class="tier-grid-points">50,000 积分</div>
+            </div>
+
+            <!-- 7. Pearl - Ornate crown with pearl -->
+            <div class="tier-grid-item" data-tier="pearl">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <radialGradient id="pearl-grad" cx="40%" cy="35%" r="60%">
+                                <stop offset="0%" style="stop-color:#FFFFFF"/>
+                                <stop offset="50%" style="stop-color:#F5F5F5"/>
+                                <stop offset="100%" style="stop-color:#E0E0E0"/>
+                            </radialGradient>
+                            <radialGradient id="pearl-shine" cx="35%" cy="30%" r="40%">
+                                <stop offset="0%" style="stop-color:white;stop-opacity:0.9"/>
+                                <stop offset="100%" style="stop-color:white;stop-opacity:0"/>
+                            </radialGradient>
+                        </defs>
+                        <!-- Crown base -->
+                        <path d="M12 34 L16 18 L22 26 L28 14 L34 26 L40 18 L44 34 Z" fill="#D4AF37" stroke="#B8860B" stroke-width="1"/>
+                        <rect x="12" y="34" width="32" height="6" rx="2" fill="#D4AF37" stroke="#B8860B" stroke-width="1"/>
+                        <!-- Crown jewels -->
+                        <circle cx="16" cy="22" r="2" fill="#E53935"/>
+                        <circle cx="28" cy="16" r="2.5" fill="#1E88E5"/>
+                        <circle cx="40" cy="22" r="2" fill="#43A047"/>
+                        <!-- Pearl -->
+                        <circle cx="28" cy="46" r="8" fill="url(#pearl-grad)" stroke="#D4C5A9" stroke-width="1"/>
+                        <ellipse cx="25" cy="43" rx="4" ry="3" fill="url(#pearl-shine)"/>
+                        <!-- Pearl glow -->
+                        <circle cx="28" cy="46" r="12" fill="white" opacity="0.15"/>
+                        <!-- Decorative lines -->
+                        <path d="M20 40 C24 38 32 38 36 40" fill="none" stroke="#D4AF37" stroke-width="0.8" opacity="0.5"/>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">珍珠</div>
+                <div class="tier-grid-points">100,000 积分</div>
+            </div>
+
+            <!-- 8. Obsidian - Ultimate crown with dark energy -->
+            <div class="tier-grid-item" data-tier="obsidian">
+                <div class="tier-grid-icon">
+                    <svg viewBox="0 0 56 56" fill="none">
+                        <defs>
+                            <linearGradient id="obsidian-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#455A64"/>
+                                <stop offset="50%" style="stop-color:#263238"/>
+                                <stop offset="100%" style="stop-color:#000000"/>
+                            </linearGradient>
+                            <radialGradient id="obsidian-glow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#7C4DFF;stop-opacity:0.4"/>
+                                <stop offset="100%" style="stop-color:#7C4DFF;stop-opacity:0"/>
+                            </radialGradient>
+                            <linearGradient id="obsidian-crown" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#B0BEC5"/>
+                                <stop offset="50%" style="stop-color:#546E7A"/>
+                                <stop offset="100%" style="stop-color:#263238"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Dark energy glow -->
+                        <circle cx="28" cy="28" r="26" fill="url(#obsidian-glow)"/>
+                        <!-- Orbiting particles -->
+                        <circle cx="8" cy="16" r="1" fill="#B388FF" opacity="0.7"/>
+                        <circle cx="48" cy="12" r="1.5" fill="#7C4DFF" opacity="0.6"/>
+                        <circle cx="52" cy="36" r="1" fill="#B388FF" opacity="0.5"/>
+                        <circle cx="6" cy="40" r="1.2" fill="#7C4DFF" opacity="0.6"/>
+                        <!-- Ornate crown -->
+                        <path d="M10 32 L14 14 L20 22 L24 10 L28 20 L32 10 L36 22 L42 14 L46 32 Z" fill="url(#obsidian-crown)" stroke="#78909C" stroke-width="1"/>
+                        <rect x="10" y="32" width="36" height="7" rx="2" fill="url(#obsidian-crown)" stroke="#78909C" stroke-width="1"/>
+                        <!-- Crown jewels with glow -->
+                        <circle cx="14" cy="18" r="2.5" fill="#7C4DFF">
+                            <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="28" cy="12" r="3" fill="#E040FB">
+                            <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="42" cy="18" r="2.5" fill="#7C4DFF">
+                            <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Central obsidian gem -->
+                        <polygon points="28,42 34,46 32,52 24,52 22,46" fill="url(#obsidian-grad)" stroke="#546E7A" stroke-width="1"/>
+                        <polygon points="28,42 28,48 34,46" fill="rgba(255,255,255,0.2)"/>
+                        <polygon points="28,42 28,48 22,46" fill="rgba(0,0,0,0.3)"/>
+                        <!-- Eye of power -->
+                        <ellipse cx="28" cy="48" rx="3" ry="2" fill="#7C4DFF" opacity="0.8">
+                            <animate attributeName="rx" values="3;4;3" dur="3s" repeatCount="indefinite"/>
+                        </ellipse>
+                    </svg>
+                </div>
+                <div class="tier-grid-name">黑曜石</div>
+                <div class="tier-grid-points">200,000 积分</div>
+            </div>
+        </div>
+
+        <!-- Scoring Rules -->
+        <div class="section-header" style="margin-top:24px">
+            <div class="section-title">积分规则</div>
+        </div>
+        <div class="ranking-list">
+            <div class="rule-item" style="border-bottom:1px solid var(--border)">
+                <div class="rule-icon green"><i data-lucide="circle"></i></div>
+                <div class="rule-text">
+                    <div class="rule-title">Easy 简单</div>
+                    <div class="rule-desc">答对 +10 · 答错 +2</div>
+                </div>
+            </div>
+            <div class="rule-item" style="border-bottom:1px solid var(--border)">
+                <div class="rule-icon yellow"><i data-lucide="circle"></i></div>
+                <div class="rule-text">
+                    <div class="rule-title">Medium 中等</div>
+                    <div class="rule-desc">答对 +20 · 答错 +5</div>
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-icon red"><i data-lucide="circle"></i></div>
+                <div class="rule-text">
+                    <div class="rule-title">Hard 困难</div>
+                    <div class="rule-desc">答对 +35 · 答错 +8</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- League Rules -->
+        <div class="section-header" style="margin-top:24px">
+            <div class="section-title">联赛规则</div>
+        </div>
+        <div class="ranking-list">
+            <div class="rule-item" style="border-bottom:1px solid var(--border)">
+                <div class="rule-icon blue"><i data-lucide="calendar"></i></div>
+                <div class="rule-text">
+                    <div class="rule-title">每周一自动分组</div>
+                    <div class="rule-desc">同段位 30 人一组</div>
+                </div>
+            </div>
+            <div class="rule-item" style="border-bottom:1px solid var(--border)">
+                <div class="rule-icon green"><i data-lucide="trending-up"></i></div>
+                <div class="rule-text">
+                    <div class="rule-title">Top 10 晋级</div>
+                    <div class="rule-desc">排名前 10 升一段位</div>
+                </div>
+            </div>
+            <div class="rule-item" style="border-bottom:1px solid var(--border)">
+                <div class="rule-icon red"><i data-lucide="trending-down"></i></div>
+                <div class="rule-text">
+                    <div class="rule-title">Bottom 5 降级</div>
+                    <div class="rule-desc">排名后 5 降一段位</div>
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-icon yellow"><i data-lucide="alert-triangle"></i></div>
+                <div class="rule-text">
+                    <div class="rule-title">周积分为 0 直接降级</div>
+                    <div class="rule-desc">保持活跃很重要</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab: History -->
+    <div id="tab-history" class="tab-content">
+        <div class="section-header">
+            <div class="section-title">联赛历史</div>
+        </div>
+        <div class="section-subtitle"><i data-lucide="calendar-days"></i> 近 12 周联赛记录</div>
+
+        <div class="history-list">
+            <div class="history-item">
+                <div class="history-tier-icon" style="background:rgba(2,136,209,0.1)">
+                    <svg viewBox="0 0 36 36" fill="none">
+                        <polygon points="18,2 30,10 34,18 30,26 18,34 6,26 2,18 6,10" fill="#0288D1"/>
+                        <polygon points="18,2 18,18 30,10" fill="rgba(255,255,255,0.2)"/>
+                        <polygon points="18,34 18,18 6,26" fill="rgba(0,0,0,0.2)"/>
+                        <ellipse cx="14" cy="12" rx="5" ry="3" fill="white" opacity="0.3" transform="rotate(-15 14 12)"/>
+                    </svg>
+                </div>
+                <div class="history-info">
+                    <div class="history-week">5月19日 - 5月25日</div>
+                    <div class="history-result"><span class="badge badge-keep"><i data-lucide="minus"></i> 保级</span></div>
+                </div>
+                <div class="history-stats">
+                    <div class="history-rank">#11</div>
+                    <div class="history-points">789 分</div>
+                </div>
+            </div>
+            <div class="history-item">
+                <div class="history-tier-icon" style="background:rgba(2,136,209,0.1)">
+                    <svg viewBox="0 0 36 36" fill="none">
+                        <polygon points="18,2 30,10 34,18 30,26 18,34 6,26 2,18 6,10" fill="#0288D1"/>
+                        <polygon points="18,2 18,18 30,10" fill="rgba(255,255,255,0.2)"/>
+                        <polygon points="18,34 18,18 6,26" fill="rgba(0,0,0,0.2)"/>
+                        <ellipse cx="14" cy="12" rx="5" ry="3" fill="white" opacity="0.3" transform="rotate(-15 14 12)"/>
+                    </svg>
+                </div>
+                <div class="history-info">
+                    <div class="history-week">5月12日 - 5月18日</div>
+                    <div class="history-result"><span class="badge badge-promote"><i data-lucide="arrow-up"></i> 晋级</span></div>
+                </div>
+                <div class="history-stats">
+                    <div class="history-rank">#5</div>
+                    <div class="history-points">1,024 分</div>
+                </div>
+            </div>
+            <div class="history-item">
+                <div class="history-tier-icon" style="background:rgba(255,215,0,0.15)">
+                    <svg viewBox="0 0 36 36" fill="none">
+                        <line x1="18" y1="1" x2="18" y2="6" stroke="#FFD700" stroke-width="1.5" opacity="0.5"/>
+                        <line x1="6" y1="6" x2="10" y2="10" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                        <line x1="30" y1="6" x2="26" y2="10" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                        <path d="M18 8 L28 14 L28 24 C28 30 22 34 18 36 C14 34 8 30 8 24 L8 14 Z" fill="#FFD700"/>
+                        <path d="M18 12 L24 16 L24 24 C24 28 20 32 18 34 C16 32 12 28 12 24 L12 16 Z" fill="none" stroke="#FFF8E1" stroke-width="0.8" opacity="0.5"/>
+                        <path d="M14 22 L16 18 L18 20 L20 18 L22 22 L20 26 L16 26 Z" fill="#FFF8E1" opacity="0.8"/>
+                    </svg>
+                </div>
+                <div class="history-info">
+                    <div class="history-week">5月5日 - 5月11日</div>
+                    <div class="history-result"><span class="badge badge-promote"><i data-lucide="arrow-up"></i> 晋级</span></div>
+                </div>
+                <div class="history-stats">
+                    <div class="history-rank">#3</div>
+                    <div class="history-points">1,156 分</div>
+                </div>
+            </div>
+            <div class="history-item">
+                <div class="history-tier-icon" style="background:rgba(192,192,192,0.2)">
+                    <svg viewBox="0 0 36 36" fill="none">
+                        <path d="M6 18 C6 18 9 12 14 14 C10 15 8 18 8 18" fill="#D0D0D0" opacity="0.7"/>
+                        <path d="M30 18 C30 18 27 12 22 14 C26 15 28 18 28 18" fill="#D0D0D0" opacity="0.7"/>
+                        <path d="M18 4 L30 10 L30 22 C30 30 24 34 18 36 C12 34 6 30 6 22 L6 10 Z" fill="#C0C0C0" stroke="#909090" stroke-width="1"/>
+                        <path d="M18 8 L26 12 L26 22 C26 28 22 32 18 34 C14 32 10 28 10 22 L10 12 Z" fill="none" stroke="#E0E0E0" stroke-width="0.8" opacity="0.5"/>
+                        <polygon points="18,12 20,17 25,17 21,20 22.5,25 18,22 13.5,25 15,20 11,17 16,17" fill="white" opacity="0.8"/>
+                    </svg>
+                </div>
+                <div class="history-info">
+                    <div class="history-week">4月21日 - 4月27日</div>
+                    <div class="history-result"><span class="badge badge-demote"><i data-lucide="arrow-down"></i> 降级</span></div>
+                </div>
+                <div class="history-stats">
+                    <div class="history-rank">#28</div>
+                    <div class="history-points">89 分</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settlement Modal (Promote) -->
+<div id="modal-promote" class="modal-overlay" onclick="closeModal('promote')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-icon-wrapper">
+            <svg viewBox="0 0 72 72" fill="none">
+                <defs>
+                    <radialGradient id="celebrate-glow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#00B894;stop-opacity:0.3"/>
+                        <stop offset="100%" style="stop-color:#00B894;stop-opacity:0"/>
+                    </radialGradient>
+                </defs>
+                <circle cx="36" cy="36" r="34" fill="url(#celebrate-glow)"/>
+                <!-- Celebration particles -->
+                <circle cx="15" cy="15" r="2" fill="#FFD700" opacity="0.7">
+                    <animate attributeName="cy" values="15;10;15" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="57" cy="18" r="1.5" fill="#FF6B6B" opacity="0.6">
+                    <animate attributeName="cy" values="18;12;18" dur="1.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="50" cy="55" r="2" fill="#6C5CE7" opacity="0.5">
+                    <animate attributeName="cy" values="55;50;55" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="20" cy="52" r="1.5" fill="#FDCB6E" opacity="0.6">
+                    <animate attributeName="cy" values="52;47;52" dur="1.6s" repeatCount="indefinite"/>
+                </circle>
+                <!-- Star badge -->
+                <polygon points="36,10 42,26 58,26 45,36 50,52 36,42 22,52 27,36 14,26 30,26" fill="#00B894"/>
+                <polygon points="36,16 40,27 50,27 42,34 46,45 36,38 26,45 30,34 22,27 32,27" fill="white" opacity="0.4"/>
+                <!-- Check mark -->
+                <path d="M28 36 L33 41 L44 30" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+        </div>
+        <div class="modal-title">恭喜晋级！</div>
+        <div class="modal-subtitle">本周你表现出色，成功晋升段位</div>
+        <div class="modal-tier-change">
+            <div class="modal-tier-from">
+                <div class="tier-icon-modal">
+                    <svg viewBox="0 0 52 52" fill="none">
+                        <line x1="26" y1="2" x2="26" y2="8" stroke="#FFD700" stroke-width="1.5" opacity="0.5"/>
+                        <line x1="10" y1="8" x2="14" y2="12" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                        <line x1="42" y1="8" x2="38" y2="12" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                        <path d="M26 10 L40 18 L40 28 C40 36 34 42 26 46 C18 42 12 36 12 28 L12 18 Z" fill="#FFD700"/>
+                        <path d="M20 30 L23 24 L26 28 L29 24 L32 30 L29 36 L23 36 Z" fill="#FFF8E1" opacity="0.8"/>
+                    </svg>
+                </div>
+                <div class="name">金牌</div>
+            </div>
+            <div class="modal-arrow"><i data-lucide="arrow-right"></i></div>
+            <div class="modal-tier-to">
+                <div class="tier-icon-modal">
+                    <svg viewBox="0 0 52 52" fill="none">
+                        <polygon points="26,4 42,14 46,26 42,38 26,48 10,38 6,26 10,14" fill="#0288D1"/>
+                        <polygon points="26,4 26,26 42,14" fill="rgba(255,255,255,0.2)"/>
+                        <polygon points="26,48 26,26 10,38" fill="rgba(0,0,0,0.2)"/>
+                        <ellipse cx="20" cy="18" rx="6" ry="4" fill="white" opacity="0.3" transform="rotate(-15 20 18)"/>
+                    </svg>
+                </div>
+                <div class="name">蓝宝石</div>
+            </div>
+        </div>
+        <div class="modal-stats">
+            <div>
+                <div class="modal-stat-value">#5</div>
+                <div class="modal-stat-label">排名</div>
+            </div>
+            <div>
+                <div class="modal-stat-value">1,024</div>
+                <div class="modal-stat-label">积分</div>
+            </div>
+            <div>
+                <div class="modal-stat-value">87%</div>
+                <div class="modal-stat-label">正确率</div>
+            </div>
+        </div>
+        <button class="modal-btn modal-btn-primary" onclick="closeModal('promote')"><i data-lucide="party-popper"></i> 太棒了！</button>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+    <div class="nav-item"><i data-lucide="home"></i><span>首页</span></div>
+    <div class="nav-item active"><i data-lucide="trophy"></i><span>联赛</span></div>
+    <div class="nav-item"><i data-lucide="pen-tool"></i><span>答题</span></div>
+    <div class="nav-item"><i data-lucide="user"></i><span>我的</span></div>
+</div>
+
+<script>
+lucide.createIcons();
+
+function switchTab(tabName, el) {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+}
+
+function switchSubTab(subTabName, el) {
+    document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.sub-tab-content').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('subtab-' + subTabName).classList.add('active');
+}
+
+function switchDimension(dimName, el) {
+    document.querySelectorAll('.dim-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.dim-content').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('dim-' + dimName).classList.add('active');
+}
+
+function showModal(type) {
+    document.getElementById('modal-' + type).classList.remove('hidden');
+}
+
+function closeModal(type) {
+    document.getElementById('modal-' + type).classList.add('hidden');
+}
+
+// Auto show promote modal for demo
+setTimeout(() => showModal('promote'), 1500);
+</script>
+
+</body>
+</html>
