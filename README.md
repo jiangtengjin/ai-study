@@ -78,7 +78,7 @@
 ```
 ai-study/
 ├── ai-study-server/          # 主后端（Spring Boot + AI + Redis + 联赛）
-├── ai-study-server-basic/    # 精简后端（JWT 认证，无 Redis/向量库）
+├── ai-study-server-basic/    # MVP 后端（JWT 认证，RestTemplate 调用 DeepSeek，无 Redis/向量库/联赛）
 ├── ai-study-web/             # 前端（Vue 3 + Element Plus）
 ├── docs/                     # 需求分析与设计文档
 └── prototypes/               # UI 原型
@@ -126,11 +126,15 @@ npm run dev
 
 ## 两种后端模式
 
-| 特性 | ai-study-server（主） | ai-study-server-basic（精简） |
+| 特性 | ai-study-server（主） | ai-study-server-basic（MVP） |
 |------|----------------------|------------------------------|
 | 认证方式 | Sa-Token + Redis Session | Sa-Token + JWT |
-| AI 出题 | DeepSeek + Spring AI | 不支持 |
+| AI 出题 | DeepSeek + Spring AI | DeepSeek + RestTemplate |
+| AI 学习报告 | 支持 | 支持 |
 | RAG 知识库 | 通义千问 Embedding + 向量存储 | 不支持 |
 | 联网搜索 | Tavily API | 不支持 |
 | 联赛系统 | 完整 | 不支持 |
+| 积分系统 | 完整 | 不支持 |
 | 外部依赖 | MySQL + Redis | 仅 MySQL |
+
+精简后端保留了 AI 出题和学习报告的核心能力（通过 RestTemplate 直接调用 DeepSeek API），适合作为 MVP 演示或无需 Redis/向量库的轻量部署场景。
